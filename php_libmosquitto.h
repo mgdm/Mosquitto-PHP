@@ -16,11 +16,18 @@ extern zend_module_entry libmosquitto_module_entry;
 #include "TSRM.h"
 #endif
 
+#include <mosquitto.h>
+
+typedef struct _libmosquitto_context_object {
+	zend_object std;
+	struct mosquitto *client;
+} libmosquitto_context_object;
+
 PHP_MINIT_FUNCTION(libmosquitto);
 PHP_MSHUTDOWN_FUNCTION(libmosquitto);
-PHP_RINIT_FUNCTION(libmosquitto);
-PHP_RSHUTDOWN_FUNCTION(libmosquitto);
 PHP_MINFO_FUNCTION(libmosquitto);
+
+PHP_FUNCTION(mosquitto_version);
 
 #endif	/* PHP_LIBMOSQUITTO_H */
 

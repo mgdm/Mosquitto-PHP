@@ -18,10 +18,16 @@ extern zend_module_entry mosquitto_module_entry;
 
 #include <mosquitto.h>
 
-typedef struct _mosquitto_context_object {
+#define PHP_MOSQUITTO_ERROR_HANDLING() \
+	zend_replace_error_handling(EH_THROW, mosquitto_ce_exception, &mosquitto_original_error_handling TSRMLS_CC)
+
+#define PHP_MOSQUITTO_RESTORE_ERRORS() \
+	zend_restore_error_handling(&mosquitto_original_error_handling TSRMLS_CC)
+
+typedef struct _mosquitto_client_object {
 	zend_object std;
 	struct mosquitto *client;
-} mosquitto_context_object;
+} mosquitto_client_object;
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MSHUTDOWN_FUNCTION(mosquitto);

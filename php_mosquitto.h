@@ -33,8 +33,6 @@ PHP_MINIT_FUNCTION(mosquitto);
 PHP_MSHUTDOWN_FUNCTION(mosquitto);
 PHP_MINFO_FUNCTION(mosquitto);
 
-PHP_FUNCTION(mosquitto_version);
-
 #endif	/* PHP_MOSQUITTO_H */
 
 /* __footer_here__ */

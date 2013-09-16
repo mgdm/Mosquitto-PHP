@@ -13,15 +13,6 @@ zend_class_entry *mosquitto_ce_exception;
 zend_object_handlers mosquitto_std_object_handlers;
 zend_error_handling mosquitto_original_error_handling;
 
-PHP_FUNCTION(mosquitto_version)
-{
-	if (zend_parse_parameters_none() == FAILURE) {
-		return;
-	}
-
-	RETURN_LONG(mosquitto_lib_version(NULL, NULL, NULL));
-}
-
 /* {{{ */
 PHP_METHOD(Mosquitto_Client, __construct)
 {
@@ -31,17 +22,47 @@ PHP_METHOD(Mosquitto_Client, __construct)
 	zend_bool clean_session = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sb", &id, &id_len, &clean_session) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s!|b", &id, &id_len, &clean_session) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
-	object->client = mosquitto_new(id, clean_session, NULL);
+	object->client = mosquitto_new(id, clean_session, object);
 
 	if (!object->client) {
-		zend_throw_exception(mosquitto_ce_exception, "Failed to create a Mosquitto client", 0 TSRMLS_CC);
+		char buf[0x100];
+		strerror_r(errno, buf, 0x100);
+		zend_throw_exception(mosquitto_ce_exception, buf, 1 TSRMLS_CC);
+	}
+}
+/* }}} */
+
+/* {{{ */
+PHP_METHOD(Mosquitto_Client, connect)
+{
+	mosquitto_client_object *object;
+	char *host = NULL, *interface = NULL;
+	int host_len, interface_len, retval;
+	long port = 1883;
+	long keepalive = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lls!", 
+				&host, &host_len, &port, &keepalive, &interface, &interface_len) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	retval = mosquitto_connect(object->client, host, port, keepalive);
+
+	if (retval != MOSQ_ERR_SUCCESS) {
+		char buf[0x100];
+		strerror_r(errno, buf, 0x100);
+		zend_throw_exception(mosquitto_ce_exception, buf, 1 TSRMLS_CC);
 	}
 }
 /* }}} */
@@ -81,6 +102,7 @@ static zend_object_value mosquitto_client_object_new() {
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

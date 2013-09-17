@@ -27,8 +27,8 @@ extern zend_module_entry mosquitto_module_entry;
 typedef struct _mosquitto_client_object {
 	zend_object std;
 	struct mosquitto *client;
-	zend_fcall_info *connect_callback;
-	zend_fcall_info_cache *connect_callback_cache;
+	zend_fcall_info connect_callback;
+	zend_fcall_info_cache connect_callback_cache;
 } mosquitto_client_object;
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc);

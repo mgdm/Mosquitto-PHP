@@ -38,8 +38,6 @@ PHP_METHOD(Mosquitto_Client, __construct)
 		strerror_r(errno, buf, 0x100);
 		zend_throw_exception(mosquitto_ce_exception, buf, 1 TSRMLS_CC);
 	}
-
-	mosquitto_connect_callback_set(object->client, php_mosquitto_connect_callback);
 }
 /* }}} */
 
@@ -51,21 +49,37 @@ PHP_METHOD(Mosquitto_Client, connect)
 	int host_len, interface_len, retval;
 	long port = 1883;
 	long keepalive = 0;
-	zend_fcall_info *connect_callback;
-	zend_fcall_info_cache *connect_callback_cache;
+	zend_fcall_info connect_callback;
+	zend_fcall_info_cache connect_callback_cache;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lls!f!", 
-				&host, &host_len, &port, &keepalive, &interface, &interface_len, &connect_callback, &connect_callback_cache) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|llfs!",
+				&host, &host_len, &port, &keepalive,
+				&connect_callback, &connect_callback_cache,
+				&interface, &interface_len)  == FAILURE) {
+
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
 	object->connect_callback = connect_callback;
 	object->connect_callback_cache = connect_callback_cache;
-	retval = mosquitto_connect(object->client, host, port, keepalive);
+
+	if (connect_callback.object_ptr != NULL) {
+		php_printf("Adding callback reference\n");
+		Z_ADDREF_P(connect_callback.object_ptr);
+	}
+
+	mosquitto_connect_callback_set(object->client, php_mosquitto_connect_callback);
+
+	if (interface == NULL) {
+		retval = mosquitto_connect(object->client, host, port, keepalive);
+	} else {
+		retval = mosquitto_connect_bind(object->client, host, port, keepalive, interface);
+	}
 
 	if (retval == MOSQ_ERR_INVAL) {
 		zend_throw_exception(mosquitto_ce_exception, "Invalid parameters", 0 TSRMLS_CC);
@@ -87,7 +101,7 @@ PHP_METHOD(Mosquitto_Client, publish)
 	char *topic, *payload;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sslb", 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sslb",
 				&topic, &topic_len, &payload, &payload_len, &qos, &retain) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
@@ -170,24 +184,21 @@ static zend_object_value mosquitto_client_object_new() {
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc)
 {
+	php_printf("Called function\n");
 	mosquitto_client_object *object = (mosquitto_client_object *) obj;
 	zval *params[1], *retval_ptr = NULL;
-
-	if (object->connect_callback == NULL) {
-		return;
-	}
 
 	ALLOC_INIT_ZVAL(params[0]);
 	ZVAL_LONG(params[0], rc);
 
-	object->connect_callback->params = params;
-	object->connect_callback->param_count = 1;
-	object->connect_callback->retval_ptr_ptr = &retval_ptr;
-	object->connect_callback->no_separation = 1;
+	object->connect_callback.params = &params;
+	object->connect_callback.param_count = 1;
+	object->connect_callback.retval_ptr_ptr = &retval_ptr;
+	object->connect_callback.no_separation = 1;
 
-	if (zend_call_function(object->connect_callback, object->connect_callback_cache TSRMLS_CC) == FAILURE) {
+	if (zend_call_function(&object->connect_callback, &object->connect_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {
-			zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Failed to invoke connect callback %s()", Z_STRVAL_P(object->connect_callback->function_name));
+			zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Failed to invoke connect callback %s()", Z_STRVAL_P(object->connect_callback.function_name));
 		}
 	}
 

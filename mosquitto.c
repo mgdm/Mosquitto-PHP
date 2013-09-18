@@ -48,8 +48,8 @@ PHP_METHOD(Mosquitto_Client, connect)
 	int host_len, interface_len, retval;
 	long port = 1883;
 	long keepalive = 0;
-	zend_fcall_info connect_callback;
-	zend_fcall_info_cache connect_callback_cache;
+	zend_fcall_info connect_callback = empty_fcall_info;
+	zend_fcall_info_cache connect_callback_cache = empty_fcall_info_cache;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|llfs!",
@@ -64,14 +64,18 @@ PHP_METHOD(Mosquitto_Client, connect)
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	object->connect_callback = connect_callback;
-	object->connect_callback_cache = connect_callback_cache;
+	if (ZEND_FCI_INITIALIZED(connect_callback)) {
+		object->connect_callback = connect_callback;
+		object->connect_callback_cache = connect_callback_cache;
+		Z_ADDREF_P(connect_callback.function_name);
 
-	if (connect_callback.object_ptr != NULL) {
-		Z_ADDREF_P(connect_callback.object_ptr);
+		if (connect_callback.object_ptr != NULL) {
+			Z_ADDREF_P(connect_callback.object_ptr);
+		}
+
+		mosquitto_connect_callback_set(object->client, php_mosquitto_connect_callback);
 	}
 
-	mosquitto_connect_callback_set(object->client, php_mosquitto_connect_callback);
 
 	if (interface == NULL) {
 		retval = mosquitto_connect(object->client, host, port, keepalive);
@@ -238,7 +242,12 @@ static zend_object_value mosquitto_client_object_new() {
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc)
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) obj;
-	zval *params[1], *retval_ptr = NULL;
+	zval *retval_ptr = NULL;
+	zval **params = ecalloc(1, sizeof (zval));
+
+	if (!ZEND_FCI_INITIALIZED(object->connect_callback)) {
+		return;
+	}
 
 	ALLOC_INIT_ZVAL(params[0]);
 	ZVAL_LONG(params[0], rc);

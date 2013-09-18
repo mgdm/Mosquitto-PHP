@@ -150,6 +150,58 @@ PHP_METHOD(Mosquitto_Client, publish)
 }
 /* }}} */
 
+/* {{{ */
+PHP_METHOD(Mosquitto_Client, loop)
+{
+	mosquitto_client_object *object;
+	long timeout = 1000, max_packets = 0, retval = 0;
+	char *message = NULL;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l!l!",
+				&timeout, &max_packets) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	retval = mosquitto_loop(object->client, 1000, 1);
+
+	switch (retval) {
+		case MOSQ_ERR_SUCCESS:
+		default:
+			return;
+
+		case MOSQ_ERR_INVAL:
+			message = estrdup("Invalid input parameter");
+			break;
+
+		case MOSQ_ERR_NOMEM:
+			message = estrdup("Insufficient memory");
+			break;
+
+		case MOSQ_ERR_NO_CONN:
+			message = estrdup("The client is not connected to a broker");
+			break;
+
+		case MOSQ_ERR_CONN_LOST:
+			message = estrdup("Connection lost");
+			break;
+
+		case MOSQ_ERR_PROTOCOL:
+			message = estrdup("There was a protocol error communicating with the broker.");
+			break;
+
+		case MOSQ_ERR_ERRNO:
+			message = ecalloc(256, sizeof(char));
+			strerror_r(errno, message, 256);
+	}
+	zend_throw_exception(mosquitto_ce_exception, message, 0 TSRMLS_CC);
+	efree(message);
+}
+/* }}} */
+
 /* Internal functions */
 
 static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
@@ -215,6 +267,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, publish, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, loop, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

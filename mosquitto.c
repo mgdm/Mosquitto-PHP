@@ -201,7 +201,7 @@ char *strerror_wrapper(int err)
 {
 	char *buf = ecalloc(256, sizeof(char));
 	POSSIBLY_UNUSED char *bbuf = buf;
-#ifdef _GNU_SOURCE
+#ifdef STRERROR_R_CHAR_P
 	bbuf =
 #endif
 		strerror_r(err, buf, 256);

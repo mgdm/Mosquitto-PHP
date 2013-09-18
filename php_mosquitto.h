@@ -12,6 +12,12 @@ extern zend_module_entry mosquitto_module_entry;
 #	define PHP_MOSQUITTO_API
 #endif
 
+#ifdef __GLIBC__
+#define POSSIBLY_UNUSED __attribute__((unused))
+#else
+#define POSSIBLY_UNUSED
+#endif
+
 #ifdef ZTS
 #include "TSRM.h"
 #endif
@@ -32,6 +38,8 @@ typedef struct _mosquitto_client_object {
 } mosquitto_client_object;
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc);
+
+char *strerror_wrapper(int err);
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MSHUTDOWN_FUNCTION(mosquitto);

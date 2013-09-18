@@ -165,6 +165,7 @@ static zend_object_value mosquitto_client_object_new() {
 
 	zend_object_value retval;
 	mosquitto_client_object *client;
+	zval *temp;
 
 	client = ecalloc(1, sizeof(mosquitto_client_object));
 	client->std.ce = mosquitto_ce_client;

@@ -40,6 +40,7 @@ typedef struct _mosquitto_client_object {
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc);
 
 char *strerror_wrapper(int err);
+static void php_mosquitto_handle_errno(int retval, int err);
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MSHUTDOWN_FUNCTION(mosquitto);

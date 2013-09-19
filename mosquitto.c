@@ -83,12 +83,7 @@ PHP_METHOD(Mosquitto_Client, connect)
 		retval = mosquitto_connect_bind(object->client, host, port, keepalive, interface);
 	}
 
-	if (retval == MOSQ_ERR_INVAL) {
-		zend_throw_exception(mosquitto_ce_exception, "Invalid parameters", 1 TSRMLS_CC);
-	} else if (retval == MOSQ_ERR_ERRNO) {
-		char *message = strerror_wrapper(errno);
-		zend_throw_exception(mosquitto_ce_exception, message, 1 TSRMLS_CC);
-	}
+	php_mosquitto_handle_errno(retval, errno);
 }
 /* }}} */
 
@@ -112,35 +107,7 @@ PHP_METHOD(Mosquitto_Client, publish)
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	retval = mosquitto_publish(object->client, &mid, topic, payload_len, (void *) payload, qos, retain);
 
-	char *message = NULL;
-	switch (retval) {
-		case MOSQ_ERR_SUCCESS:
-		default:
-			RETURN_LONG(mid);
-			break;
-
-		case MOSQ_ERR_INVAL:
-			message = estrdup("Invalid input parameter");
-			break;
-
-		case MOSQ_ERR_NOMEM:
-			message = estrdup("Insufficient memory");
-			break;
-
-		case MOSQ_ERR_NO_CONN:
-			message = estrdup("The client is not connected to a broker");
-			break;
-
-		case MOSQ_ERR_PROTOCOL:
-			message = estrdup("There was a protocol error communicating with the broker.");
-			break;
-
-		case MOSQ_ERR_PAYLOAD_SIZE:
-			message = estrdup("Payload is too large");
-			break;
-
-	}
-	zend_throw_exception(mosquitto_ce_exception, message, 0 TSRMLS_CC);
+	php_mosquitto_handle_errno(retval, errno);
 }
 /* }}} */
 
@@ -161,37 +128,7 @@ PHP_METHOD(Mosquitto_Client, loop)
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	retval = mosquitto_loop(object->client, 1000, 1);
-
-	switch (retval) {
-		case MOSQ_ERR_SUCCESS:
-		default:
-			return;
-
-		case MOSQ_ERR_INVAL:
-			message = estrdup("Invalid input parameter");
-			break;
-
-		case MOSQ_ERR_NOMEM:
-			message = estrdup("Insufficient memory");
-			break;
-
-		case MOSQ_ERR_NO_CONN:
-			message = estrdup("The client is not connected to a broker");
-			break;
-
-		case MOSQ_ERR_CONN_LOST:
-			message = estrdup("Connection lost");
-			break;
-
-		case MOSQ_ERR_PROTOCOL:
-			message = estrdup("There was a protocol error communicating with the broker.");
-			break;
-
-		case MOSQ_ERR_ERRNO:
-			message = ecalloc(256, sizeof(char));
-			strerror_r(errno, message, 256);
-	}
-	zend_throw_exception(mosquitto_ce_exception, message, 0 TSRMLS_CC);
+	php_mosquitto_handle_errno(retval, errno);
 }
 /* }}} */
 
@@ -237,6 +174,45 @@ static zend_object_value mosquitto_client_object_new() {
 	retval.handle = zend_objects_store_put(client, NULL, (zend_objects_free_object_storage_t) mosquitto_client_object_destroy, NULL TSRMLS_CC);
 	retval.handlers = &mosquitto_std_object_handlers;
 	return retval;
+}
+
+static void php_mosquitto_handle_errno(int retval, int err) {
+	char *message = NULL;
+
+	switch (retval) {
+		case MOSQ_ERR_SUCCESS:
+		default:
+			return;
+
+		case MOSQ_ERR_INVAL:
+			message = estrdup("Invalid input parameter");
+			break;
+
+		case MOSQ_ERR_NOMEM:
+			message = estrdup("Insufficient memory");
+			break;
+
+		case MOSQ_ERR_NO_CONN:
+			message = estrdup("The client is not connected to a broker");
+			break;
+
+		case MOSQ_ERR_CONN_LOST:
+			message = estrdup("Connection lost");
+			break;
+
+		case MOSQ_ERR_PROTOCOL:
+			message = estrdup("There was a protocol error communicating with the broker.");
+			break;
+
+		case MOSQ_ERR_PAYLOAD_SIZE:
+			message = estrdup("Payload is too large");
+			break;
+
+		case MOSQ_ERR_ERRNO:
+			message = ecalloc(256, sizeof(char));
+			strerror_r(err, message, 256);
+	}
+	zend_throw_exception(mosquitto_ce_exception, message, 0 TSRMLS_CC);
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc)

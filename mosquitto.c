@@ -158,7 +158,9 @@ static zend_object_value mosquitto_client_object_new() {
 
 	zend_object_value retval;
 	mosquitto_client_object *client;
+#if PHP_VERSION_ID < 50399
 	zval *temp;
+#endif
 
 	client = ecalloc(1, sizeof(mosquitto_client_object));
 	client->std.ce = mosquitto_ce_client;

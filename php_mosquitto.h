@@ -29,8 +29,12 @@ typedef struct _mosquitto_client_object {
 	struct mosquitto *client;
 	zend_fcall_info connect_callback;
 	zend_fcall_info_cache connect_callback_cache;
+	zend_fcall_info subscribe_callback;
+	zend_fcall_info_cache subscribe_callback_cache;
 	zend_fcall_info message_callback;
 	zend_fcall_info_cache message_callback_cache;
+	zend_fcall_info disconnect_callback;
+	zend_fcall_info_cache disconnect_callback_cache;
 } mosquitto_client_object;
 
 typedef struct _mosquitto_message_object {
@@ -105,8 +109,13 @@ extern zend_object_handlers mosquitto_std_object_handlers;
 extern zend_error_handling mosquitto_original_error_handling;
 
 extern zend_class_entry *mosquitto_ce_exception;
+extern zend_class_entry *mosquitto_ce_client;
+extern zend_class_entry *mosquitto_ce_message;
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc);
+PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, void *client_obj, const struct mosquitto_message *message);
+PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, void *client_obj, int mid, int qos_count, const int *granted_qos);
+
 
 char *php_mosquitto_strerror_wrapper(int err);
 static void php_mosquitto_handle_errno(int retval, int err);

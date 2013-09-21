@@ -67,7 +67,7 @@ typedef struct _php_mosquitto_prop_handler {
 { \
 	int i = 0; \
 	while (b[i].name != NULL) { \
-		php_mosquitto_add_property((a), (b)[i].name, (b)[i].name_length, \
+		php_mosquitto_message_add_property((a), (b)[i].name, (b)[i].name_length, \
 							(php_mosquitto_read_t)(b)[i].read_func, (php_mosquitto_write_t)(b)[i].write_func TSRMLS_CC); \
 		i++; \
 	} \

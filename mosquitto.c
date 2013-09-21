@@ -34,7 +34,7 @@ PHP_METHOD(Mosquitto_Client, __construct)
 	object->client = mosquitto_new(id, clean_session, object);
 
 	if (!object->client) {
-		char *message = strerror_wrapper(errno);
+		char *message = php_mosquitto_strerror_wrapper(errno);
 		zend_throw_exception(mosquitto_ce_exception, message, 1 TSRMLS_CC);
 	}
 }
@@ -134,7 +134,7 @@ PHP_METHOD(Mosquitto_Client, loop)
 
 /* Internal functions */
 
-char *strerror_wrapper(int err)
+PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 {
 	char *buf = ecalloc(256, sizeof(char));
 	POSSIBLY_UNUSED char *bbuf = buf;
@@ -209,9 +209,10 @@ static void php_mosquitto_handle_errno(int retval, int err) {
 			break;
 
 		case MOSQ_ERR_ERRNO:
-			message = ecalloc(256, sizeof(char));
-			strerror_r(err, message, 256);
+			message = php_mosquitto_strerror_wrapper(errno);
+			break;
 	}
+
 	zend_throw_exception(mosquitto_ce_exception, message, 0 TSRMLS_CC);
 }
 
@@ -243,6 +244,17 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);
+	}
+}
+
+PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
+{
+	mosquitto_client_object *object = (mosquitto_client_object *) obj;
+	zval *retval_ptr = NULL;
+	zval **params = ecalloc(1, sizeof (zval));
+
+	if (!ZEND_FCI_INITIALIZED(object->message_callback)) {
+		return;
 	}
 }
 
@@ -301,6 +313,9 @@ PHP_MINIT_FUNCTION(mosquitto)
 			zend_exception_get_default(TSRMLS_C), "Exception" TSRMLS_CC);
 
 	mosquitto_lib_init();
+
+	PHP_MINIT(mosquitto_message)(INIT_FUNC_ARGS_PASSTHRU);
+
 	return SUCCESS;
 }
 /* }}} */

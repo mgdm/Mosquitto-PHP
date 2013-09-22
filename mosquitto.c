@@ -310,7 +310,7 @@ static zend_object_value mosquitto_client_object_new() {
 	return retval;
 }
 
-static void php_mosquitto_handle_errno(int retval, int err) {
+void php_mosquitto_handle_errno(int retval, int err) {
 	char *message = NULL;
 
 	switch (retval) {

@@ -118,7 +118,7 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 
 
 char *php_mosquitto_strerror_wrapper(int err);
-static void php_mosquitto_handle_errno(int retval, int err);
+void php_mosquitto_handle_errno(int retval, int err);
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MINIT_FUNCTION(mosquitto_message);

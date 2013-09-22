@@ -331,6 +331,7 @@ PHP_MINIT_FUNCTION(mosquitto_message)
 
 	INIT_NS_CLASS_ENTRY(message_ce, "Mosquitto", "Message", mosquitto_message_methods);
 	mosquitto_ce_message = zend_register_internal_class(&message_ce TSRMLS_CC);
+	mosquitto_ce_message->create_object = mosquitto_message_object_new;
 
 	zend_hash_init(&php_mosquitto_message_properties, 0, NULL, NULL, 1);
 	PHP_MOSQUITTO_ADD_PROPERTIES(&php_mosquitto_message_properties, php_mosquitto_message_property_entries);

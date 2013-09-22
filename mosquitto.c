@@ -385,19 +385,20 @@ PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, vo
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) client_obj;
 	mosquitto_message_object *message_object;
-	zval *retval_ptr = NULL;
-	zval **params = ecalloc(1, sizeof (zval));
+	zval *retval_ptr = NULL, *message_zval = NULL;
+	zval **params[1];
 
 	if (!ZEND_FCI_INITIALIZED(object->message_callback)) {
 		return;
 	}
 
-	ALLOC_INIT_ZVAL(params[0]);
-	object_init_ex(params[0], mosquitto_ce_message);
-	message_object = (mosquitto_message_object *) zend_object_store_get_object(params[0] TSRMLS_CC);
+	ALLOC_INIT_ZVAL(message_zval);
+	object_init_ex(message_zval, mosquitto_ce_message);
+	message_object = (mosquitto_message_object *) zend_object_store_get_object(message_zval TSRMLS_CC);
 	mosquitto_message_copy(message_object->message, message);
+	params[0] = &message_zval;
 
-	object->message_callback.params = &params;
+	object->message_callback.params = params;
 	object->message_callback.param_count = 1;
 	object->message_callback.retval_ptr_ptr = &retval_ptr;
 	object->message_callback.no_separation = 1;
@@ -408,7 +409,7 @@ PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, vo
 		}
 	}
 
-	zval_ptr_dtor(params);
+	zval_ptr_dtor(&message_zval);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);
@@ -419,19 +420,22 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) client_obj;
 	zval *retval_ptr = NULL;
-	zval **params = ecalloc(2, sizeof (zval));
+	zval *mid_zval = NULL, *qos_count_zval = NULL;
+	zval **params[2];
 
 	if (!ZEND_FCI_INITIALIZED(object->subscribe_callback)) {
 		return;
 	}
 
-	ALLOC_INIT_ZVAL(params[0]);
-	ALLOC_INIT_ZVAL(params[1]);
-	ZVAL_LONG(params[0], mid);
-	ZVAL_LONG(params[1], qos_count);
+	ALLOC_INIT_ZVAL(mid_zval);
+	ALLOC_INIT_ZVAL(qos_count_zval);
+	ZVAL_LONG(mid_zval, mid);
+	ZVAL_LONG(qos_count_zval, qos_count);
 	/* TODO: handle granted_qos */
+	params[0] = &mid_zval;
+	params[1] = &qos_count_zval;
 
-	object->subscribe_callback.params = &params;
+	object->subscribe_callback.params = params;
 	object->subscribe_callback.param_count = 2;
 	object->subscribe_callback.retval_ptr_ptr = &retval_ptr;
 	object->subscribe_callback.no_separation = 1;
@@ -442,8 +446,8 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 		}
 	}
 
-	zval_ptr_dtor(&params[0]);
-	zval_ptr_dtor(&params[1]);
+	zval_ptr_dtor(params[0]);
+	zval_ptr_dtor(params[1]);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);

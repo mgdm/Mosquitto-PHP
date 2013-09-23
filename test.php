@@ -7,7 +7,7 @@ $client->onMessage('message');
 $client->connect("localhost", 1883, 5);
 $client->subscribe('/#', 1);
 
-for ($i = 0; $i < 10; $i++) {
+while (true) {
 	$client->loop();
 }
 

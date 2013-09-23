@@ -395,7 +395,7 @@ PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, vo
 	ALLOC_INIT_ZVAL(message_zval);
 	object_init_ex(message_zval, mosquitto_ce_message);
 	message_object = (mosquitto_message_object *) zend_object_store_get_object(message_zval TSRMLS_CC);
-	mosquitto_message_copy(message_object->message, message);
+	mosquitto_message_copy(&message_object->message, message);
 	params[0] = &message_zval;
 
 	object->message_callback.params = params;
@@ -420,15 +420,15 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) client_obj;
 	zval *retval_ptr = NULL;
-	zval *mid_zval = NULL, *qos_count_zval = NULL;
+	zval *mid_zval, *qos_count_zval;
 	zval **params[2];
 
 	if (!ZEND_FCI_INITIALIZED(object->subscribe_callback)) {
 		return;
 	}
 
-	ALLOC_INIT_ZVAL(mid_zval);
-	ALLOC_INIT_ZVAL(qos_count_zval);
+	MAKE_STD_ZVAL(mid_zval);
+	MAKE_STD_ZVAL(qos_count_zval);
 	ZVAL_LONG(mid_zval, mid);
 	ZVAL_LONG(qos_count_zval, qos_count);
 	/* TODO: handle granted_qos */

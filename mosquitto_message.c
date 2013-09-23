@@ -34,21 +34,21 @@ PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(qos);
 static int php_mosquitto_message_read_retain(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC)
 {
 	MAKE_STD_ZVAL(*retval);
-	ZVAL_BOOL(*retval, mosquitto_object->message->retain);
+	ZVAL_BOOL(*retval, mosquitto_object->message.retain);
 	return SUCCESS;
 }
 
 static int php_mosquitto_message_read_topic(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC)
 {
 	MAKE_STD_ZVAL(*retval);
-	ZVAL_STRINGL(*retval, mosquitto_object->message->topic, strlen(mosquitto_object->message->topic), 1);
+	ZVAL_STRINGL(*retval, mosquitto_object->message.topic, strlen(mosquitto_object->message.topic), 1);
 	return SUCCESS;
 }
 
 static int php_mosquitto_message_read_payload(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC)
 {
 	MAKE_STD_ZVAL(*retval);
-	ZVAL_STRINGL(*retval, mosquitto_object->message->payload, mosquitto_object->message->payloadlen, 1);
+	ZVAL_STRINGL(*retval, mosquitto_object->message.payload, mosquitto_object->message.payloadlen, 1);
 	return SUCCESS;
 }
 
@@ -65,7 +65,7 @@ static int php_mosquitto_message_write_retain(mosquitto_message_object *mosquitt
 		newval = &ztmp;
 	}
 
-	mosquitto_object->message->retain = Z_LVAL_P(newval);
+	mosquitto_object->message.retain = Z_LVAL_P(newval);
 
 	if (newval == &ztmp) {
 		zval_dtor(newval);
@@ -84,7 +84,7 @@ static int php_mosquitto_message_write_topic(mosquitto_message_object *mosquitto
 		newval = &ztmp;
 	}
 
-	mosquitto_object->message->topic = estrdup(Z_STRVAL_P(newval));
+	mosquitto_object->message.topic = estrdup(Z_STRVAL_P(newval));
 	mosquitto_object->owned_topic = 1;
 
 	if (newval == &ztmp) {
@@ -104,8 +104,8 @@ static int php_mosquitto_message_write_payload(mosquitto_message_object *mosquit
 		newval = &ztmp;
 	}
 
-	mosquitto_object->message->payload = estrdup(Z_STRVAL_P(newval));
-	mosquitto_object->message->payloadlen = Z_STRLEN_P(newval);
+	mosquitto_object->message.payload = estrdup(Z_STRVAL_P(newval));
+	mosquitto_object->message.payloadlen = Z_STRLEN_P(newval);
 	mosquitto_object->owned_payload = 1;
 
 	if (newval == &ztmp) {
@@ -284,11 +284,11 @@ static void mosquitto_message_object_destroy(void *object TSRMLS_DC)
 	FREE_HASHTABLE(message->std.properties);
 
 	if (message->owned_topic == 1) {
-		efree(message->message->topic);
+		efree(message->message.topic);
 	}
 
 	if (message->owned_payload == 1) {
-		efree(message->message->payload);
+		efree(message->message.payload);
 	}
 
 	efree(object);
@@ -302,7 +302,6 @@ static zend_object_value mosquitto_message_object_new() {
 
 	message_obj = ecalloc(1, sizeof(mosquitto_message_object));
 	message_obj->std.ce = mosquitto_ce_message;
-	message_obj->message = NULL;
 
 	ALLOC_HASHTABLE(message_obj->std.properties);
 	zend_hash_init(message_obj->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);

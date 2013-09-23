@@ -39,7 +39,7 @@ typedef struct _mosquitto_client_object {
 
 typedef struct _mosquitto_message_object {
 	zend_object std;
-	struct mosquitto_message *message;
+	struct mosquitto_message message;
 	zend_bool owned_topic;
 	zend_bool owned_payload;
 } mosquitto_message_object;
@@ -81,7 +81,7 @@ typedef struct _php_mosquitto_prop_handler {
 	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC) \
 	{ \
 		MAKE_STD_ZVAL(*retval); \
-		ZVAL_LONG(*retval, mosquitto_object->message->name); \
+		ZVAL_LONG(*retval, mosquitto_object->message.name); \
 		return SUCCESS; \
 	}
 
@@ -96,7 +96,7 @@ static int php_mosquitto_message_write_##name(mosquitto_message_object *mosquitt
 		newval = &ztmp; \
 	} \
 \
-	mosquitto_object->message->name = Z_LVAL_P(newval); \
+	mosquitto_object->message.name = Z_LVAL_P(newval); \
 \
 	if (newval == &ztmp) { \
 		zval_dtor(newval); \

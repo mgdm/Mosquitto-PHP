@@ -312,7 +312,7 @@ static zend_object_value mosquitto_message_object_new() {
 	object_properties_init(&message_obj->std, mosquitto_ce_message);
 #endif
 	retval.handle = zend_objects_store_put(message_obj, NULL, (zend_objects_free_object_storage_t) mosquitto_message_object_destroy, NULL TSRMLS_CC);
-	retval.handlers = &mosquitto_std_object_handlers;
+	retval.handlers = &mosquitto_message_object_handlers;
 	return retval;
 }
 

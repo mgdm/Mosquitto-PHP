@@ -717,8 +717,12 @@ PHP_MSHUTDOWN_FUNCTION(mosquitto)
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(mosquitto)
 {
+	char tmp[16];
+	snprintf(tmp, sizeof(tmp), "%d.%d.%d", LIBMOSQUITTO_MAJOR, LIBMOSQUITTO_MINOR, LIBMOSQUITTO_REVISION);
+
 	php_info_print_table_start();
-	php_info_print_table_header(2, "mosquitto support", "enabled");
+	php_info_print_table_header(2, "Mosquitto support", "enabled");
+	php_info_print_table_row(2, "libmosquitto version", tmp);
 	php_info_print_table_end();
 }
 /* }}} */

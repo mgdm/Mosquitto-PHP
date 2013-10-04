@@ -360,7 +360,10 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	mosquitto_client_object *client = (mosquitto_client_object *) object;
 
 	/* Disconnect cleanly, but disregard an error if it wasn't connected */
+	/* We must loop here so that the disconnect packet is sent and acknowledged */
 	mosquitto_disconnect(client->client);
+	mosquitto_loop(client->client, 100, 1);
+
 	zend_hash_destroy(client->std.properties);
 	FREE_HASHTABLE(client->std.properties);
 	mosquitto_destroy(client->client);

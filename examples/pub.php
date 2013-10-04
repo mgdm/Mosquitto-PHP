@@ -10,7 +10,8 @@ $client->subscribe('/#', 1);
 
 while (true) {
 	$client->loop();
-	$client->publish('/hello', "Hello from PHP at " . date('Y-m-d H:i:s'), 1, 0);
+	$mid = $client->publish('/hello', "Hello from PHP at " . date('Y-m-d H:i:s'), 1, 0);
+	echo "Sent message ID: {$mid}\n";
 	$client->loop();
 
 	sleep(2);
@@ -28,7 +29,7 @@ function subscribe() {
 }
 
 function message($message) {
-	printf("Got a message on topic %s with payload:\n%s\n\n", $message->topic, $message->payload);
+	printf("Got a message ID %d on topic %s with payload:\n%s\n\n", $message->mid, $message->topic, $message->payload);
 }
 
 function disconnect() {

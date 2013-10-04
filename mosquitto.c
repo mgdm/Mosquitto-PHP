@@ -316,6 +316,8 @@ PHP_METHOD(Mosquitto_Client, publish)
 	retval = mosquitto_publish(object->client, &mid, topic, payload_len, (void *) payload, qos, retain);
 
 	php_mosquitto_handle_errno(retval, errno);
+
+	RETURN_LONG(mid);
 }
 /* }}} */
 

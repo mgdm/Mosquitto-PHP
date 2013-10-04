@@ -61,6 +61,50 @@ PHP_METHOD(Mosquitto_Client, setCredentials)
 /* }}} */
 
 /* {{{ */
+PHP_METHOD(Mosquitto_Client, setWill)
+{
+	mosquitto_client_object *object;
+	int topic_len, payload_len, retval;
+	long qos;
+	zend_bool retain;
+	char *topic, *payload;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sslb",
+				&topic, &topic_len, &payload, &payload_len, &qos, &retain) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	retval = mosquitto_will_set(object->client, topic, payload_len, (void *) payload, qos, retain);
+
+	php_mosquitto_handle_errno(retval, errno);
+}
+/* }}} */
+
+/* {{{ */
+PHP_METHOD(Mosquitto_Client, clearWill)
+{
+	mosquitto_client_object *object;
+	int retval;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters_none() == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	retval = mosquitto_will_clear(object->client);
+
+	php_mosquitto_handle_errno(retval, errno);
+}
+/* }}} */
+
+/* {{{ */
 PHP_METHOD(Mosquitto_Client, connect)
 {
 	mosquitto_client_object *object;
@@ -598,6 +642,8 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, onSubscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onMessage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setWill, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, clearWill, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, disconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, publish, NULL, ZEND_ACC_PUBLIC)

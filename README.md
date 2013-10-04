@@ -6,3 +6,9 @@ This is an extension to allow using the [Mosquitto MQTT library](http://mosquitt
 
 * PHP 5.4+ (I'll probably fix it for 5.3 shortly)
 * libmosquitto 1.2.1 (this is the only version I have tested)
+
+## To do
+
+* ZTS support
+* Arginfo
+* Tests

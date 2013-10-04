@@ -358,6 +358,9 @@ PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 {
 	mosquitto_client_object *client = (mosquitto_client_object *) object;
+
+	/* Disconnect cleanly, but disregard an error if it wasn't connected */
+	mosquitto_disconnect(client->client);
 	zend_hash_destroy(client->std.properties);
 	FREE_HASHTABLE(client->std.properties);
 	mosquitto_destroy(client->client);
@@ -566,12 +569,13 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
-	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onConnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onDisconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onSubscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onMessage, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, disconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, publish, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, subscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loop, NULL, ZEND_ACC_PUBLIC)

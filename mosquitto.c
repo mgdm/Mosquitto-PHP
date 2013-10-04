@@ -21,10 +21,10 @@ PHP_METHOD(Mosquitto_Client, __construct)
 	mosquitto_client_object *object;
 	char *id = NULL;
 	int id_len = 0;
-	zend_bool clean_session = 0;
+	zend_bool clean_session = 1;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s!|b", &id, &id_len, &clean_session) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sb", &id, &id_len, &clean_session) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}

@@ -342,6 +342,27 @@ PHP_METHOD(Mosquitto_Client, loop)
 }
 /* }}} */
 
+/* {{{ */
+PHP_METHOD(Mosquitto_Client, loopForever)
+{
+	mosquitto_client_object *object;
+	long timeout = 1000, max_packets = 1, retval = 0;
+	char *message = NULL;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l!l!",
+				&timeout, &max_packets) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	retval = mosquitto_loop_forever(object->client, timeout, max_packets);
+	php_mosquitto_handle_errno(retval, errno);
+}
+/* }}} */
+
 /* Internal functions */
 
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
@@ -582,6 +603,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, publish, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, subscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loop, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, loopForever, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

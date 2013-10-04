@@ -1,29 +1,25 @@
 <?php
 
 $client = new Mosquitto\Client();
-$client->onConnect('callback');
+$client->onConnect('connect');
 $client->onDisconnect('disconnect');
 $client->onSubscribe('subscribe');
 $client->onMessage('message');
 $client->connect("localhost", 1883, 5);
 $client->subscribe('/#', 1);
 
-for ($i = 0; $i < 10; $i++) {
-	$client->loop();
-}
-$client->disconnect();
-unset($client);
+$client->loopForever();
 
-function callback($r) {
+function connect($r) {
 	echo "I got code {$r}\n";
 }
 
 function subscribe() {
-	var_dump(func_get_args());
+	echo "Subscribed to a topic\n";
 }
 
 function message($message) {
-	var_dump($message->topic, $message->payload);
+	printf("Got a message on topic %s with payload:\n%s\n", $message->topic, $message->payload);
 }
 
 function disconnect() {

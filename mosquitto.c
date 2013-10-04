@@ -41,6 +41,26 @@ PHP_METHOD(Mosquitto_Client, __construct)
 /* }}} */
 
 /* {{{ */
+PHP_METHOD(Mosquitto_Client, setCredentials)
+{
+	mosquitto_client_object *object;
+	char *username = NULL, *password = NULL;
+	int username_len, password_len, retval;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &username, &username_len, &password, &password_len) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	retval = mosquitto_username_pw_set(object->client, username, password);
+	php_mosquitto_handle_errno(retval, errno);
+}
+/* }}} */
+
+/* {{{ */
 PHP_METHOD(Mosquitto_Client, connect)
 {
 	mosquitto_client_object *object;
@@ -546,6 +566,7 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onConnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onDisconnect, NULL, ZEND_ACC_PUBLIC)

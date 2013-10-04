@@ -325,7 +325,7 @@ PHP_METHOD(Mosquitto_Client, unsubscribe)
 PHP_METHOD(Mosquitto_Client, loop)
 {
 	mosquitto_client_object *object;
-	long timeout = 1000, max_packets = 0, retval = 0;
+	long timeout = 1000, max_packets = 1, retval = 0;
 	char *message = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
@@ -337,7 +337,7 @@ PHP_METHOD(Mosquitto_Client, loop)
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
-	retval = mosquitto_loop(object->client, 1000, 1);
+	retval = mosquitto_loop(object->client, timeout, max_packets);
 	php_mosquitto_handle_errno(retval, errno);
 }
 /* }}} */

@@ -294,7 +294,7 @@ static void mosquitto_message_object_destroy(void *object TSRMLS_DC)
 	efree(object);
 }
 
-static zend_object_value mosquitto_message_object_new() {
+static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRMLS_DC) {
 
 	zend_object_value retval;
 	mosquitto_message_object *message_obj;

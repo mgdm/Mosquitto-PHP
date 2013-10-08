@@ -35,6 +35,7 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info_cache message_callback_cache;
 	zend_fcall_info disconnect_callback;
 	zend_fcall_info_cache disconnect_callback_cache;
+	TSRMLS_D;
 } mosquitto_client_object;
 
 typedef struct _mosquitto_message_object {
@@ -42,6 +43,7 @@ typedef struct _mosquitto_message_object {
 	struct mosquitto_message message;
 	zend_bool owned_topic;
 	zend_bool owned_payload;
+	TSRMLS_D;
 } mosquitto_message_object;
 
 typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC);
@@ -119,7 +121,7 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq, void *obj, int rc);
 
 char *php_mosquitto_strerror_wrapper(int err);
-void php_mosquitto_handle_errno(int retval, int err);
+void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC);
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MINIT_FUNCTION(mosquitto_message);

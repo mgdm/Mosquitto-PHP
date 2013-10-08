@@ -9,6 +9,5 @@ This is an extension to allow using the [Mosquitto MQTT library](http://mosquitt
 
 ## To do
 
-* ZTS support
 * Arginfo
 * Tests

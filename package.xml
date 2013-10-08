@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.4.7" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+    <name>Mosquitto</name>
+    <channel>pecl.mgdm.net</channel>
+    <summary>Extension for libmosquitto</summary>
+    <description>Mosquitto provides support for the MQTT protocol, including publishing, subscribing, and an event loop.</description>
+    <lead>
+     <name>Michael Maclean</name>
+     <user>mgdm</user>
+     <email>mgdm@php.net</email>
+     <active>yes</active>
+    </lead>
+
+    <date>2013-10-08</date>
+    <version><release>0.0.1</release><api>0.1.1</api></version>
+    <stability><release>beta</release><api>beta</api></stability>
+    <license uri="http://www.php.net/license">PHP License</license>
+    <notes>
+     Initial release.
+    </notes>
+
+    <contents>
+       <dir name="/">
+            <file role="doc" name="README.md"/>
+            <file role="doc" name="CREDITS"/>
+            <file role="doc" name="LICENCE"/>
+
+            <file role="src" name="php_mosquitto.h"/>
+
+            <file role="src" name="mosquitto.c"/>
+            <file role="src" name="mosquitto_message.c"/>
+
+            <file role="src" name="config.m4"/>
+        </dir>
+    </contents>
+
+    <dependencies>
+      <required>
+        <php>
+          <min>5.3.0</min>
+        </php>
+        <pearinstaller>
+          <min>1.4.0</min>
+        </pearinstaller>
+      </required>
+   
+    </dependencies>
+   
+    <providesextension>mosquitto</providesextension>
+
+    <extsrcrelease>
+     <configureoption default="autodetect" name="with-mosquitto" prompt="Please provide the prefix of the libmosquitto installation" />
+    </extsrcrelease>
+   
+    <changelog>
+    </changelog>
+</package>
+<!--
+vim:et:ts=1:sw=1
+-->

@@ -340,6 +340,25 @@ PHP_METHOD(Mosquitto_Client, setMaxInFlightMessages)
 /* }}} */
 
 /* {{{ */
+PHP_METHOD(Mosquitto_Client, setMessageRetry)
+{
+	mosquitto_client_object *object;
+	int retval;
+	long retry = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &retry)  == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	mosquitto_message_retry_set(object->client, retry);
+}
+/* }}} */
+
+/* {{{ */
 PHP_METHOD(Mosquitto_Client, publish)
 {
 	mosquitto_client_object *object;
@@ -691,6 +710,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, setWill, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, clearWill, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setReconnectDelay, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setMessageRetry, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, disconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setMaxInFlightMessages, NULL, ZEND_ACC_PUBLIC)

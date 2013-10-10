@@ -512,6 +512,10 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 	client->std.ce = mosquitto_ce_client;
 	client->client = NULL;
 
+#ifdef ZTS
+	client->TSRMLS_C = TSRMLS_C;
+#endif
+
 	ALLOC_HASHTABLE(client->std.properties);
 	zend_hash_init(client->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
 #if PHP_VERSION_ID < 50399
@@ -585,7 +589,7 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 	object->connect_callback.retval_ptr_ptr = &retval_ptr;
 	object->connect_callback.no_separation = 1;
 
-	if (zend_call_function(&object->connect_callback, &object->connect_callback_cache, object->TSRMLS_C) == FAILURE) {
+	if (zend_call_function(&object->connect_callback, &object->connect_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {
 			zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Failed to invoke connect callback %s()", Z_STRVAL_P(object->connect_callback.function_name));
 		}

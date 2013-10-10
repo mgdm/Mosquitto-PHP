@@ -35,7 +35,10 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info_cache message_callback_cache;
 	zend_fcall_info disconnect_callback;
 	zend_fcall_info_cache disconnect_callback_cache;
+
+#ifdef ZTS
 	TSRMLS_D;
+#endif
 } mosquitto_client_object;
 
 typedef struct _mosquitto_message_object {
@@ -43,7 +46,9 @@ typedef struct _mosquitto_message_object {
 	struct mosquitto_message message;
 	zend_bool owned_topic;
 	zend_bool owned_payload;
+#ifdef ZTS
 	TSRMLS_D;
+#endif
 } mosquitto_message_object;
 
 typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC);

@@ -303,6 +303,10 @@ static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRML
 	message_obj = ecalloc(1, sizeof(mosquitto_message_object));
 	message_obj->std.ce = mosquitto_ce_message;
 
+#ifdef ZTS
+	message_obj->TSRMLS_C = TSRMLS_C;
+#endif
+
 	ALLOC_HASHTABLE(message_obj->std.properties);
 	zend_hash_init(message_obj->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
 #if PHP_VERSION_ID < 50399

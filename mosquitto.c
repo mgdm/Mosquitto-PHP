@@ -438,7 +438,7 @@ PHP_METHOD(Mosquitto_Client, loop)
 	char *message = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l!l!",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ll",
 				&timeout, &max_packets) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
@@ -459,7 +459,7 @@ PHP_METHOD(Mosquitto_Client, loopForever)
 	char *message = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l!l!",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ll",
 				&timeout, &max_packets) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;

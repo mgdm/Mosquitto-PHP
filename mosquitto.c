@@ -415,11 +415,10 @@ PHP_METHOD(Mosquitto_Client, unsubscribe)
 	mosquitto_client_object *object;
 	char *sub;
 	int sub_len, retval, mid;
-	long qos;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl",
-				&sub, &sub_len, &qos) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+				&sub, &sub_len) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}

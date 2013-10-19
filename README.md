@@ -318,4 +318,6 @@ object.
 ## To do
 
 * Arginfo
+* Logging callbacks
+* TLS support
 * Tests

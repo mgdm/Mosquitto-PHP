@@ -9,6 +9,29 @@ This is an extension to allow using the [Mosquitto MQTT library](http://mosquitt
 * Linux or Mac OS X. I do not have a Windows machine handy, though patches or
   pull requests are of course very welcome!
 
+## Installation
+
+You may obtain this package using [my PECL channel](http://pecl.mgdm.net), if you prefer:
+
+````
+pecl channel-discover pecl.mgdm.net
+pecl install Mosquitto-alpha
+````
+
+Alternatively, you can use the normal extension build process:
+
+````
+phpize
+./configure --with-mosquitto=/path/to/libmosquitto
+make
+make install
+````
+
+Then add `extension=mosquitto.so` to your `php.ini`.
+
+The `--with-mosquitto` argument is optional, and only required if your
+libmosquitto install cannot be found.
+
 ## Documentation
 
 The classes in this extension are namespaced.

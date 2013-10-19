@@ -11,12 +11,15 @@
      <active>yes</active>
     </lead>
 
-    <date>2013-10-08</date>
-    <version><release>0.0.1</release><api>0.1.1</api></version>
-    <stability><release>beta</release><api>beta</api></stability>
-    <license uri="http://www.php.net/license">PHP License</license>
+    <date>2013-10-19</date>
+    <version><release>0.1.0</release><api>0.1.0</api></version>
+    <stability><release>alpha</release><api>alpha</api></stability>
+	<license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
     <notes>
-     Initial release.
+		* Add missing unsubscribe callbacks.
+		* Return message IDs from subscribe() and unsubscribe().
+		* Fix compatibility with PHP 5.3.
+		* Add documentation to the README.
     </notes>
 
     <contents>

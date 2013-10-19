@@ -404,6 +404,8 @@ PHP_METHOD(Mosquitto_Client, subscribe)
 	retval = mosquitto_subscribe(object->client, &mid, sub, qos);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+
+	RETURN_LONG(mid);
 }
 /* }}} */
 
@@ -427,6 +429,8 @@ PHP_METHOD(Mosquitto_Client, unsubscribe)
 	retval = mosquitto_unsubscribe(object->client, &mid, sub);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+
+	RETURN_LONG(mid);
 }
 /* }}} */
 

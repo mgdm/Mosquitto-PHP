@@ -285,6 +285,40 @@ PHP_METHOD(Mosquitto_Client, onSubscribe)
 /* }}} */
 
 /* {{{ */
+PHP_METHOD(Mosquitto_Client, onUnsubscribe)
+{
+	mosquitto_client_object *object;
+	zend_fcall_info unsubscribe_callback = empty_fcall_info;
+	zend_fcall_info_cache unsubscribe_callback_cache = empty_fcall_info_cache;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "f!",
+				&unsubscribe_callback, &unsubscribe_callback_cache)  == FAILURE) {
+
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if (!ZEND_FCI_INITIALIZED(unsubscribe_callback)) {
+		zend_throw_exception(mosquitto_ce_exception, "Need a valid callback", 0 TSRMLS_CC);
+	}
+
+	object->unsubscribe_callback = unsubscribe_callback;
+	object->unsubscribe_callback_cache = unsubscribe_callback_cache;
+	Z_ADDREF_P(unsubscribe_callback.function_name);
+
+	if (unsubscribe_callback.object_ptr != NULL) {
+		Z_ADDREF_P(unsubscribe_callback.object_ptr);
+	}
+
+	mosquitto_unsubscribe_callback_set(object->client, php_mosquitto_unsubscribe_callback);
+}
+/* }}} */
+
+/* {{{ */
 PHP_METHOD(Mosquitto_Client, onMessage)
 {
 	mosquitto_client_object *object;
@@ -718,12 +752,49 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 	}
 }
 
+PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq, void *client_obj, int mid)
+{
+	mosquitto_client_object *object = (mosquitto_client_object *) client_obj;
+	zval *retval_ptr = NULL;
+	zval *mid_zval;
+	zval **params[1];
+#ifdef ZTS
+	TSRMLS_D = object->TSRMLS_C;
+#endif
+
+	if (!ZEND_FCI_INITIALIZED(object->unsubscribe_callback)) {
+		return;
+	}
+
+	MAKE_STD_ZVAL(mid_zval);
+	ZVAL_LONG(mid_zval, mid);
+	params[0] = &mid_zval;
+
+	object->unsubscribe_callback.params = params;
+	object->unsubscribe_callback.param_count = 1;
+	object->unsubscribe_callback.retval_ptr_ptr = &retval_ptr;
+	object->unsubscribe_callback.no_separation = 1;
+
+	if (zend_call_function(&object->unsubscribe_callback, &object->unsubscribe_callback_cache TSRMLS_CC) == FAILURE) {
+		if (!EG(exception)) {
+			zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Failed to invoke unsubscribe callback %s()", Z_STRVAL_P(object->unsubscribe_callback.function_name));
+		}
+	}
+
+	zval_ptr_dtor(params[0]);
+
+	if (retval_ptr != NULL) {
+		zval_ptr_dtor(&retval_ptr);
+	}
+}
+
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Mosquitto_Client, onConnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onDisconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onSubscribe, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, onUnsubscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onMessage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setWill, NULL, ZEND_ACC_PUBLIC)

@@ -4,8 +4,10 @@ This is an extension to allow using the [Mosquitto MQTT library](http://mosquitt
 
 ## Requirements
 
-* PHP 5.4+ (I'll probably fix it for 5.3 shortly)
+* PHP 5.3+
 * libmosquitto 1.2.1 (this is the only version I have tested)
+* Linux or Mac OS X. I do not have a Windows machine handy, though patches or
+  pull requests are of course very welcome!
 
 ## Documentation
 

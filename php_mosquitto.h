@@ -18,6 +18,16 @@ extern zend_module_entry mosquitto_module_entry;
 #define POSSIBLY_UNUSED
 #endif
 
+#if defined(PHP_VERSION_ID) && (PHP_VERSION_ID >= 50399)
+#	define ZEND_LITERAL_KEY_DC , const zend_literal *_zend_literal_key
+#	define ZEND_LITERAL_KEY_CC , _zend_literal_key
+#	define ZEND_LITERAL_NIL_CC , NULL
+#else
+#	define ZEND_LITERAL_KEY_DC
+#	define ZEND_LITERAL_KEY_CC
+#	define ZEND_LITERAL_NIL_CC
+#endif
+
 #ifdef ZTS
 #include "TSRM.h"
 #endif

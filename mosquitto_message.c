@@ -124,7 +124,7 @@ const php_mosquitto_prop_handler php_mosquitto_message_property_entries[] = {
 	{NULL, 0, NULL, NULL}
 };
 
-zval *php_mosquitto_message_read_property(zval *object, zval *member, int type, const zend_literal *key TSRMLS_DC)
+zval *php_mosquitto_message_read_property(zval *object, zval *member, int type ZEND_LITERAL_KEY_DC TSRMLS_DC)
 {
 	zval tmp_member;
 	zval *retval;
@@ -153,7 +153,7 @@ zval *php_mosquitto_message_read_property(zval *object, zval *member, int type, 
 		}
 	} else {
 		zend_object_handlers * std_hnd = zend_get_std_object_handlers();
-		retval = std_hnd->read_property(object, member, type, key TSRMLS_CC);
+		retval = std_hnd->read_property(object, member, type ZEND_LITERAL_KEY_CC TSRMLS_CC);
 	}
 
 	if (member == &tmp_member) {
@@ -163,7 +163,7 @@ zval *php_mosquitto_message_read_property(zval *object, zval *member, int type, 
 	return(retval);
 }
 
-void php_mosquitto_message_write_property(zval *object, zval *member, zval *value, const zend_literal *key TSRMLS_DC)
+void php_mosquitto_message_write_property(zval *object, zval *member, zval *value ZEND_LITERAL_KEY_DC TSRMLS_DC)
 {
 	zval tmp_member;
 	mosquitto_message_object *obj;
@@ -190,7 +190,7 @@ void php_mosquitto_message_write_property(zval *object, zval *member, zval *valu
 		}
 	} else {
 		zend_object_handlers * std_hnd = zend_get_std_object_handlers();
-		std_hnd->write_property(object, member, value, key TSRMLS_CC);
+		std_hnd->write_property(object, member, value ZEND_LITERAL_KEY_CC TSRMLS_CC);
 	}
 
 	if (member == &tmp_member) {
@@ -198,7 +198,7 @@ void php_mosquitto_message_write_property(zval *object, zval *member, zval *valu
 	}
 }
 
-static int php_mosquitto_message_has_property(zval *object, zval *member, int has_set_exists, const zend_literal *key TSRMLS_DC)
+static int php_mosquitto_message_has_property(zval *object, zval *member, int has_set_exists ZEND_LITERAL_KEY_DC TSRMLS_DC)
 {
 	php_mosquitto_prop_handler *hnd;
 	int ret = 0;
@@ -209,7 +209,7 @@ static int php_mosquitto_message_has_property(zval *object, zval *member, int ha
 				ret = 1;
 				break;
 			case 0: {
-				zval *value = php_mosquitto_message_read_property(object, member, BP_VAR_IS, key TSRMLS_CC);
+				zval *value = php_mosquitto_message_read_property(object, member, BP_VAR_IS ZEND_LITERAL_KEY_CC TSRMLS_CC);
 				if (value != EG(uninitialized_zval_ptr)) {
 					ret = Z_TYPE_P(value) != IS_NULL? 1:0;
 					/* refcount is 0 */
@@ -219,7 +219,7 @@ static int php_mosquitto_message_has_property(zval *object, zval *member, int ha
 				break;
 			}
 			default: {
-				zval *value = php_mosquitto_message_read_property(object, member, BP_VAR_IS, key TSRMLS_CC);
+				zval *value = php_mosquitto_message_read_property(object, member, BP_VAR_IS ZEND_LITERAL_KEY_CC TSRMLS_CC);
 				if (value != EG(uninitialized_zval_ptr)) {
 					convert_to_boolean(value);
 					ret = Z_BVAL_P(value)? 1:0;
@@ -232,7 +232,7 @@ static int php_mosquitto_message_has_property(zval *object, zval *member, int ha
 		}
 	} else {
 		zend_object_handlers * std_hnd = zend_get_std_object_handlers();
-		ret = std_hnd->has_property(object, member, has_set_exists, key TSRMLS_CC);
+		ret = std_hnd->has_property(object, member, has_set_exists ZEND_LITERAL_KEY_CC TSRMLS_CC);
 	}
 	return ret;
 }

@@ -397,12 +397,12 @@ PHP_METHOD(Mosquitto_Client, publish)
 {
 	mosquitto_client_object *object;
 	int mid, topic_len, payload_len, retval;
-	long qos;
-	zend_bool retain;
+	long qos = 0;
+	zend_bool retain = 0;
 	char *topic, *payload;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sslb",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|lb",
 				&topic, &topic_len, &payload, &payload_len, &qos, &retain) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;

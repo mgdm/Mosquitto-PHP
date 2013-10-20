@@ -91,8 +91,8 @@ disconnection from the broker. Must be called before connect().
 | --- | --- | ---- |
 | topic | string | The topic on which to publish the will. |
 | payload | string | The data to send. |
-| qos | int | Integer 0, 1, or 2 indicating the Quality of Service to be used. |
-| retain | boolean | If true, the message will be retained. |
+| qos | int | Optional. Default 0. Integer 0, 1, or 2 indicating the Quality of Service to be used. |
+| retain | boolean | Optional. Default false. If true, the message will be retained. |
 
 #### clearWill
 

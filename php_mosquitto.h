@@ -37,6 +37,9 @@ extern zend_module_entry mosquitto_module_entry;
 typedef struct _mosquitto_client_object {
 	zend_object std;
 	struct mosquitto *client;
+
+	zend_bool constructed;
+
 	zend_fcall_info connect_callback;
 	zend_fcall_info_cache connect_callback_cache;
 	zend_fcall_info subscribe_callback;

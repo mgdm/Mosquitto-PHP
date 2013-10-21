@@ -13,6 +13,8 @@
 zend_class_entry *mosquitto_ce_client;
 zend_class_entry *mosquitto_ce_exception;
 zend_object_handlers mosquitto_std_object_handlers;
+static zend_function mosquitto_client_ctor_wrapper_fun;
+
 zend_error_handling mosquitto_original_error_handling;
 
 /* {{{ */
@@ -34,8 +36,11 @@ PHP_METHOD(Mosquitto_Client, __construct)
 	object->client = mosquitto_new(id, clean_session, object);
 
 	if (!object->client) {
+		ZVAL_NULL(getThis());
 		char *message = php_mosquitto_strerror_wrapper(errno);
 		zend_throw_exception(mosquitto_ce_exception, message, 1 TSRMLS_CC);
+	} else {
+		object->constructed = 1;
 	}
 }
 /* }}} */
@@ -165,7 +170,7 @@ PHP_METHOD(Mosquitto_Client, disconnect)
 	char *host = NULL, *interface = NULL;
 	int host_len, interface_len, retval;
 	long port = 1883;
-	long keepalive = 0;
+	long keepalive = 60;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters_none() == FAILURE) {
@@ -522,6 +527,65 @@ PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 	return bbuf;
 }
 
+static zend_function *mosquitto_client_object_get_constructor(zval *object TSRMLS_DC)
+{
+//	if (Z_OBJCE_P(object) == mosquitto_ce_client) {
+//		return zend_get_std_object_handlers()->get_constructor(object TSRMLS_CC);
+//	}
+
+	return &mosquitto_client_ctor_wrapper_fun;
+}
+
+static void mosquitto_client_object_ctor_wrapper(INTERNAL_FUNCTION_PARAMETERS) {
+	zval *this = getThis();
+	mosquitto_client_object *obj;
+	zend_class_entry *this_ce;
+	zend_function *zf;
+	zend_fcall_info fci = {0};
+	zend_fcall_info_cache fci_cache = {0};
+	zval *retval_ptr = NULL;
+	unsigned i;
+
+	obj = zend_object_store_get_object(this TSRMLS_CC);
+	zf = zend_get_std_object_handlers()->get_constructor(this TSRMLS_CC);
+	this_ce = Z_OBJCE_P(this);
+
+	fci.size = sizeof(fci);
+	fci.function_table = &this_ce->function_table;
+	fci.object_ptr = this;
+	/* fci.function_name = ; not necessary to bother */
+	fci.retval_ptr_ptr = &retval_ptr;
+	fci.param_count = ZEND_NUM_ARGS();
+	fci.params = emalloc(fci.param_count * sizeof *fci.params);
+	/* Or use _zend_get_parameters_array_ex instead of loop: */
+	for (i = 0; i < fci.param_count; i++) {
+		fci.params[i] = (zval **) (zend_vm_stack_top(TSRMLS_C) - 1 -
+				(fci.param_count - i));
+	}
+	fci.object_ptr = this;
+	fci.no_separation = 0;
+
+	fci_cache.initialized = 1;
+#if PHP_VERSION_ID < 50500
+	fci_cache.called_scope = EG(current_execute_data)->called_scope;
+#else
+	fci_cache.called_scope = EG(current_execute_data)->current_called_scope;
+#endif
+	fci_cache.calling_scope = EG(current_execute_data)->current_scope;
+	fci_cache.function_handler = zf;
+	fci_cache.object_ptr = this;
+
+	zend_call_function(&fci, &fci_cache TSRMLS_CC);
+	if (!EG(exception) && obj->constructed == 0)
+		zend_throw_exception(NULL, "parent::__construct() must be called in "
+				"the constructor.", 0 TSRMLS_CC);
+	efree(fci.params);
+
+	if (retval_ptr) {
+		zval_ptr_dtor(&retval_ptr);
+	}
+}
+
 static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 {
 	mosquitto_client_object *client = (mosquitto_client_object *) object;
@@ -556,9 +620,9 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 	ALLOC_HASHTABLE(client->std.properties);
 	zend_hash_init(client->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
 #if PHP_VERSION_ID < 50399
-	zend_hash_copy(client->std.properties, &mosquitto_ce_client->default_properties, (copy_ctor_func_t) zval_add_ref,(void *) &temp, sizeof(zval *));
+	zend_hash_copy(client->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,(void *) &temp, sizeof(zval *));
 #else
-	object_properties_init(&client->std, mosquitto_ce_client);
+	object_properties_init(&client->std, ce);
 #endif
 	retval.handle = zend_objects_store_put(client, NULL, (zend_objects_free_object_storage_t) mosquitto_client_object_destroy, NULL TSRMLS_CC);
 	retval.handlers = &mosquitto_std_object_handlers;
@@ -790,7 +854,7 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
-	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onConnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onDisconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onSubscribe, NULL, ZEND_ACC_PUBLIC)
@@ -841,16 +905,33 @@ zend_module_entry mosquitto_module_entry = {
 ZEND_GET_MODULE(mosquitto)
 #endif
 
-/* {{{ PHP_MINIT_FUNCTION */
+	/* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(mosquitto)
 {
+	zend_class_entry client_ce, exception_ce;
+
 	memcpy(&mosquitto_std_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	mosquitto_std_object_handlers.get_constructor = mosquitto_client_object_get_constructor;
 	mosquitto_std_object_handlers.clone_obj = NULL;
 
-	zend_class_entry client_ce, exception_ce;
 	INIT_NS_CLASS_ENTRY(client_ce, "Mosquitto", "Client", mosquitto_client_methods);
 	mosquitto_ce_client = zend_register_internal_class_ex(&client_ce, NULL, NULL TSRMLS_CC);
 	mosquitto_ce_client->create_object = mosquitto_client_object_new;
+
+	mosquitto_client_ctor_wrapper_fun.type = ZEND_INTERNAL_FUNCTION;
+	mosquitto_client_ctor_wrapper_fun.common.function_name = "internal_construction_wrapper";
+	mosquitto_client_ctor_wrapper_fun.common.scope = mosquitto_ce_client;
+	mosquitto_client_ctor_wrapper_fun.common.fn_flags = ZEND_ACC_PROTECTED;
+	mosquitto_client_ctor_wrapper_fun.common.prototype = NULL;
+	mosquitto_client_ctor_wrapper_fun.common.required_num_args = 0;
+	mosquitto_client_ctor_wrapper_fun.common.arg_info = NULL;
+#if PHP_VERSION_ID < 50399
+	/* moved to common.fn_flags with rev 303381 */
+	mosquitto_client_ctor_wrapper_fun.common.pass_rest_by_reference = 0;
+	mosquitto_client_ctor_wrapper_fun.common.return_reference = 0;
+#endif
+	mosquitto_client_ctor_wrapper_fun.internal_function.handler = mosquitto_client_object_ctor_wrapper;
+	mosquitto_client_ctor_wrapper_fun.internal_function.module = EG(current_module);
 
 	INIT_NS_CLASS_ENTRY(exception_ce, "Mosquitto", "Exception", NULL);
 	mosquitto_ce_exception = zend_register_internal_class_ex(&exception_ce,

@@ -41,7 +41,13 @@ static int php_mosquitto_message_read_retain(mosquitto_message_object *mosquitto
 static int php_mosquitto_message_read_topic(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC)
 {
 	MAKE_STD_ZVAL(*retval);
-	ZVAL_STRINGL(*retval, mosquitto_object->message.topic, strlen(mosquitto_object->message.topic), 1);
+
+	if (mosquitto_object->message.topic != NULL) {
+		ZVAL_STRINGL(*retval, mosquitto_object->message.topic, strlen(mosquitto_object->message.topic), 1);
+	} else {
+		ZVAL_NULL(*retval);
+	}
+
 	return SUCCESS;
 }
 

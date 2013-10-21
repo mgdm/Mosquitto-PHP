@@ -546,7 +546,7 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 #endif
 
 	client = ecalloc(1, sizeof(mosquitto_client_object));
-	client->std.ce = mosquitto_ce_client;
+	client->std.ce = ce;
 	client->client = NULL;
 
 #ifdef ZTS

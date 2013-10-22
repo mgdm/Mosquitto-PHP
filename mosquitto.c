@@ -715,8 +715,8 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) client_obj;
 	zval *retval_ptr = NULL;
-	zval *mid_zval, *qos_count_zval;
-	zval **params[2];
+	zval *mid_zval, *qos_count_zval, *granted_qos_zval;
+	zval **params[3];
 #ifdef ZTS
 	TSRMLS_D = object->TSRMLS_C;
 #endif
@@ -725,16 +725,20 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 		return;
 	}
 
+	/* Since we can only subscribe to one topic per message, it seems reasonable to
+	 * take just the first entry from granted_qos as the granted QoS value */
 	MAKE_STD_ZVAL(mid_zval);
 	MAKE_STD_ZVAL(qos_count_zval);
+	MAKE_STD_ZVAL(granted_qos_zval);
 	ZVAL_LONG(mid_zval, mid);
 	ZVAL_LONG(qos_count_zval, qos_count);
-	/* TODO: handle granted_qos */
+	ZVAL_LONG(granted_qos_zval, *granted_qos);
 	params[0] = &mid_zval;
 	params[1] = &qos_count_zval;
+	params[2] = &granted_qos_zval;
 
 	object->subscribe_callback.params = params;
-	object->subscribe_callback.param_count = 2;
+	object->subscribe_callback.param_count = 3;
 	object->subscribe_callback.retval_ptr_ptr = &retval_ptr;
 	object->subscribe_callback.no_separation = 1;
 

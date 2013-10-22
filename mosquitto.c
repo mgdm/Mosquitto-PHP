@@ -558,7 +558,7 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 #endif
 
 	client = ecalloc(1, sizeof(mosquitto_client_object));
-	client->std.ce = mosquitto_ce_client;
+	client->std.ce = ce;
 	client->client = NULL;
 
 #ifdef ZTS
@@ -568,9 +568,9 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 	ALLOC_HASHTABLE(client->std.properties);
 	zend_hash_init(client->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
 #if PHP_VERSION_ID < 50399
-	zend_hash_copy(client->std.properties, &mosquitto_ce_client->default_properties, (copy_ctor_func_t) zval_add_ref,(void *) &temp, sizeof(zval *));
+	zend_hash_copy(client->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,(void *) &temp, sizeof(zval *));
 #else
-	object_properties_init(&client->std, mosquitto_ce_client);
+	object_properties_init(&client->std, ce);
 #endif
 	retval.handle = zend_objects_store_put(client, NULL, (zend_objects_free_object_storage_t) mosquitto_client_object_destroy, NULL TSRMLS_CC);
 	retval.handlers = &mosquitto_std_object_handlers;

@@ -37,6 +37,7 @@ extern zend_module_entry mosquitto_module_entry;
 typedef struct _mosquitto_client_object {
 	zend_object std;
 	struct mosquitto *client;
+
 	zend_fcall_info connect_callback;
 	zend_fcall_info_cache connect_callback_cache;
 	zend_fcall_info subscribe_callback;
@@ -47,6 +48,8 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info_cache message_callback_cache;
 	zend_fcall_info disconnect_callback;
 	zend_fcall_info_cache disconnect_callback_cache;
+	zend_fcall_info log_callback;
+	zend_fcall_info_cache log_callback_cache;
 
 #ifdef ZTS
 	TSRMLS_D;
@@ -133,6 +136,7 @@ extern zend_class_entry *mosquitto_ce_message;
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc);
 PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq, void *obj, int rc);
+PHP_MOSQUITTO_API void php_mosquitto_log_callback(struct mosquitto *mosq, void *obj, int level, const char *str);
 PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, void *client_obj, const struct mosquitto_message *message);
 PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, void *client_obj, int mid, int qos_count, const int *granted_qos);
 PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq, void *client_obj, int mid);

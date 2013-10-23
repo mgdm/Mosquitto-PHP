@@ -41,28 +41,28 @@ The classes in this extension are namespaced.
 This is the actual Mosquitto client.
 
 1. [__construct](#__construct) - create a new client
-1. [setCredentials](#setCredentials) - set the credentials to use on connection
-1. [setWill](#setWill) - set the client will, to be delivered if disconnected
+1. [setCredentials](#setcredentials) - set the credentials to use on connection
+1. [setWill](#setwill) - set the client will, to be delivered if disconnected
    uncleanly
-1. [clearWill](#clearWill) - clear a previously-set will
-1. [setReconnectDelay](#setReconnectDelay) - set the behaviour if disconnected
+1. [clearWill](#clearwill) - clear a previously-set will
+1. [setReconnectDelay](#setreconnectdelay) - set the behaviour if disconnected
    uncleanly
 1. [connect](#connect) - connect to an MQTT broker
 1. [disconnect](#disconnect) - disconnect from an MQTT broker
-1. [onConnect](#onConnect) - set the connect callback
-1. [onDisconnect](#onDisconnect) - set the disconnect callback
-1. [onLog](#onLog) - set the logging callback
-1. [onSubscribe](#onSubscribe) - set the subscribe callback
-1. [onMessage](#onMessage) - set the callback fired when a message is received
-1. [setMaxInFlightMessages](#setMaxInFlightMessages) - set the number of QoS
+1. [onConnect](#onconnect) - set the connect callback
+1. [onDisconnect](#ondisconnect) - set the disconnect callback
+1. [onLog](#onlog) - set the logging callback
+1. [onSubscribe](#onsubscribe) - set the subscribe callback
+1. [onMessage](#onmessage) - set the callback fired when a message is received
+1. [setMaxInFlightMessages](#setmaxinflightmessages) - set the number of QoS
    1 and 2 messages that can be "in flight" at once
-1. [setMessageRetry](#setMessageRetry) - set the number of seconds to wait
+1. [setMessageRetry](#setmessageretry) - set the number of seconds to wait
    before retrying messages
 1. [publish](#publish) - publish a message to a broker
 1. [subscribe](#subscribe) - subscribe to a topic
 1. [unsubscribe](#unsubscribe) - unsubscribe from a topic
 1. [loop](#loop) - The main network loop
-1. [loopForever](#loopForever) - run loop() in an infinite blocking loop
+1. [loopForever](#loopforever) - run loop() in an infinite blocking loop
 
 #### __construct
 

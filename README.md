@@ -51,6 +51,7 @@ This is the actual Mosquitto client.
 1. [disconnect](#disconnect) - disconnect from an MQTT broker
 1. [onConnect](#onConnect) - set the connect callback
 1. [onDisconnect](#onDisconnect) - set the disconnect callback
+1. [onLog](#onLog) - set the logging callback
 1. [onSubscribe](#onSubscribe) - set the subscribe callback
 1. [onMessage](#onMessage) - set the callback fired when a message is received
 1. [setMaxInFlightMessages](#setMaxInFlightMessages) - set the number of QoS
@@ -164,6 +165,29 @@ The callback should take parameters of the form:
 | Parameter | Type | Description |
 | --- | --- | ---- |
 | rc | int | Reason for the disconnection. 0 means the client requested it. Any other value indicates an unexpected disconnection. |
+
+#### onLog
+
+Set the logging callback.
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
+| callback | callback | The callback |
+
+The callback should take parameters of the form:
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
+| level | int | The log message level from the values below |
+| str | string | The message string.
+
+The level can be one of:
+
+* Mosquitto\Client::LOG_DEBUG
+* Mosquitto\Client::LOG_INFO
+* Mosquitto\Client::LOG_NOTICE
+* Mosquitto\Client::LOG_WARNING
+* Mosquitto\Client::LOG_ERR
 
 #### onSubscribe
 

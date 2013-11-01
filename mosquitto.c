@@ -42,6 +42,43 @@ PHP_METHOD(Mosquitto_Client, __construct)
 }
 /* }}} */
 
+/* {{{ Mosquitto\Client::setTlsCertificates() */
+PHP_METHOD(Mosquitto_Client, setTlsCertificates)
+{
+	mosquitto_client_object *object;
+	char *ca_path = NULL, *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
+	int ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len;
+	zval *stat;
+	zend_bool is_dir = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sss", 
+				&ca_path, &ca_path_len,
+				&cert_path, &cert_path_len,
+				&key_path, &key_path_len,
+				&key_pw, &key_pw_len) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	php_stat(ca_path, ca_path_len, FS_IS_DIR, stat);
+	is_dir = Z_BVAL_P(stat);
+	zval_dtor(stat);
+	FREE_ZVAL(stat);
+
+	if (is_dir) {
+		mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, NULL);
+	} else {
+		mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, NULL);
+	}
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
 /* {{{ Mosquitto\Client::setCredentials() */
 PHP_METHOD(Mosquitto_Client, setCredentials)
 {

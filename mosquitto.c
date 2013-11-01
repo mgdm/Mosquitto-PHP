@@ -17,7 +17,7 @@ zend_error_handling mosquitto_original_error_handling;
 
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC);
 
-/* {{{ */
+/* {{{ Mosquitto\Client::__construct() */
 PHP_METHOD(Mosquitto_Client, __construct)
 {
 	mosquitto_client_object *object;
@@ -42,7 +42,7 @@ PHP_METHOD(Mosquitto_Client, __construct)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::setCredentials() */
 PHP_METHOD(Mosquitto_Client, setCredentials)
 {
 	mosquitto_client_object *object;
@@ -62,7 +62,7 @@ PHP_METHOD(Mosquitto_Client, setCredentials)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::setWill() */
 PHP_METHOD(Mosquitto_Client, setWill)
 {
 	mosquitto_client_object *object;
@@ -86,7 +86,7 @@ PHP_METHOD(Mosquitto_Client, setWill)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::clearWill() */
 PHP_METHOD(Mosquitto_Client, clearWill)
 {
 	mosquitto_client_object *object;
@@ -106,7 +106,7 @@ PHP_METHOD(Mosquitto_Client, clearWill)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::setReconnectDelay() */
 PHP_METHOD(Mosquitto_Client, setReconnectDelay)
 {
 	mosquitto_client_object *object;
@@ -129,7 +129,7 @@ PHP_METHOD(Mosquitto_Client, setReconnectDelay)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::connect() */
 PHP_METHOD(Mosquitto_Client, connect)
 {
 	mosquitto_client_object *object;
@@ -160,7 +160,7 @@ PHP_METHOD(Mosquitto_Client, connect)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::disconnect() */
 PHP_METHOD(Mosquitto_Client, disconnect)
 {
 	mosquitto_client_object *object;
@@ -184,7 +184,7 @@ PHP_METHOD(Mosquitto_Client, disconnect)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::onConnect() */
 PHP_METHOD(Mosquitto_Client, onConnect)
 {
 	mosquitto_client_object *object;
@@ -218,7 +218,7 @@ PHP_METHOD(Mosquitto_Client, onConnect)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::onDisconnect() */
 PHP_METHOD(Mosquitto_Client, onDisconnect)
 {
 	mosquitto_client_object *object;
@@ -252,7 +252,7 @@ PHP_METHOD(Mosquitto_Client, onDisconnect)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::onSubscribe() */
 PHP_METHOD(Mosquitto_Client, onSubscribe)
 {
 	mosquitto_client_object *object;
@@ -286,7 +286,7 @@ PHP_METHOD(Mosquitto_Client, onSubscribe)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::onUnsubscribe() */
 PHP_METHOD(Mosquitto_Client, onUnsubscribe)
 {
 	mosquitto_client_object *object;
@@ -320,7 +320,7 @@ PHP_METHOD(Mosquitto_Client, onUnsubscribe)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::onMessage() */
 PHP_METHOD(Mosquitto_Client, onMessage)
 {
 	mosquitto_client_object *object;
@@ -354,7 +354,7 @@ PHP_METHOD(Mosquitto_Client, onMessage)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::setMaxInFlightMessages() */
 PHP_METHOD(Mosquitto_Client, setMaxInFlightMessages)
 {
 	mosquitto_client_object *object;
@@ -375,7 +375,7 @@ PHP_METHOD(Mosquitto_Client, setMaxInFlightMessages)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::setMessageRetry() */
 PHP_METHOD(Mosquitto_Client, setMessageRetry)
 {
 	mosquitto_client_object *object;
@@ -394,7 +394,7 @@ PHP_METHOD(Mosquitto_Client, setMessageRetry)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::publish() */
 PHP_METHOD(Mosquitto_Client, publish)
 {
 	mosquitto_client_object *object;
@@ -420,7 +420,7 @@ PHP_METHOD(Mosquitto_Client, publish)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::subscribe() */
 PHP_METHOD(Mosquitto_Client, subscribe)
 {
 	mosquitto_client_object *object;
@@ -445,7 +445,7 @@ PHP_METHOD(Mosquitto_Client, subscribe)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::unsubscribe() */
 PHP_METHOD(Mosquitto_Client, unsubscribe)
 {
 	mosquitto_client_object *object;
@@ -469,7 +469,7 @@ PHP_METHOD(Mosquitto_Client, unsubscribe)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::loop() */
 PHP_METHOD(Mosquitto_Client, loop)
 {
 	mosquitto_client_object *object;
@@ -490,7 +490,7 @@ PHP_METHOD(Mosquitto_Client, loop)
 }
 /* }}} */
 
-/* {{{ */
+/* {{{ Mosquitto\Client::loopForever() */
 PHP_METHOD(Mosquitto_Client, loopForever)
 {
 	mosquitto_client_object *object;

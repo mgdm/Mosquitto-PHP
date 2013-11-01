@@ -300,7 +300,7 @@ a callback to return from the loop.
 ### Class Mosquitto\Message
 
 Represents a message received from a broker. All data is represented as
-properties. The class has no methods.
+properties.
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -309,6 +309,18 @@ properties. The class has no methods.
 | mid | int | The ID of this message. |
 | qos | int | The QoS value applied to this message. |
 | retain | bool | Whether this is a retained message or not. |
+
+This class has one static method.
+
+#### topicMatchesSub
+
+Returns true if the supplied topic matches the supplied description, and
+otherwise false.
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
+| topic | string | The topic to match |
+| subscription | string | The subscription to match |
 
 ### Class Mosquitto\Exception
 

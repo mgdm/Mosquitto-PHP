@@ -389,6 +389,23 @@ PHP_METHOD(Mosquitto_Client, onMessage)
 }
 /* }}} */
 
+/* {{{ Mosquitto\Client::getSocket() */
+PHP_METHOD(Mosquitto_Client, getSocket)
+{
+	mosquitto_client_object *object;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters_none()  == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
+	RETURN_LONG(mosquitto_socket(object->client));
+}
+/* }}} */
+
 /* {{{ Mosquitto\Client::setMaxInFlightMessages() */
 PHP_METHOD(Mosquitto_Client, setMaxInFlightMessages)
 {
@@ -894,6 +911,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, onSubscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onUnsubscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onMessage, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, getSocket, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setWill, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, clearWill, NULL, ZEND_ACC_PUBLIC)

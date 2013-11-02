@@ -596,6 +596,14 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	mosquitto_loop(client->client, 100, 1);
 	mosquitto_destroy(client->client);
 
+	if (ZEND_FCI_INITIALIZED(client->message_callback)) {
+		Z_DELREF_P(client->message_callback.function_name);
+
+		if (client->message_callback.object_ptr) {
+			Z_DELREF_P(client->message_callback.object_ptr);
+		}
+	}
+
 	if (client->std.properties) {
 		zend_hash_destroy(client->std.properties);
 		FREE_HASHTABLE(client->std.properties);

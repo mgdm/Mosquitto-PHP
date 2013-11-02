@@ -120,7 +120,7 @@ Connect to an MQTT broker.
 | --- | --- | ---- |
 | host | string | Hostname to connect to |
 | port | int | Optional. Port number to connect to. Defaults to 1883. |
-| keepalive | int | Optional. Number of sections after which the broker should PING the client if no messages have been recieved. Defaults to 60. |
+| keepalive | int | Optional. Number of sections after which the broker should PING the client if no messages have been recieved. |
 | interface | string | Optional. The address or hostname of a local interface to bind to for this connection. |
 
 #### disconnect

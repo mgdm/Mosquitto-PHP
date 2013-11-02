@@ -137,7 +137,7 @@ PHP_METHOD(Mosquitto_Client, connect)
 	char *host = NULL, *interface = NULL;
 	int host_len, interface_len, retval;
 	long port = 1883;
-	long keepalive = 0;
+	long keepalive = 60;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lls!",
@@ -209,11 +209,6 @@ PHP_METHOD(Mosquitto_Client, onConnect)
 
 	object->connect_callback = connect_callback;
 	object->connect_callback_cache = connect_callback_cache;
-	Z_ADDREF_P(connect_callback.function_name);
-
-	if (connect_callback.object_ptr != NULL) {
-		Z_ADDREF_P(connect_callback.object_ptr);
-	}
 
 	mosquitto_connect_callback_set(object->client, php_mosquitto_connect_callback);
 }
@@ -243,11 +238,6 @@ PHP_METHOD(Mosquitto_Client, onDisconnect)
 
 	object->disconnect_callback = disconnect_callback;
 	object->disconnect_callback_cache = disconnect_callback_cache;
-	Z_ADDREF_P(disconnect_callback.function_name);
-
-	if (disconnect_callback.object_ptr != NULL) {
-		Z_ADDREF_P(disconnect_callback.object_ptr);
-	}
 
 	mosquitto_disconnect_callback_set(object->client, php_mosquitto_disconnect_callback);
 }
@@ -277,11 +267,6 @@ PHP_METHOD(Mosquitto_Client, onLog)
 
 	object->log_callback = log_callback;
 	object->log_callback_cache = log_callback_cache;
-	Z_ADDREF_P(log_callback.function_name);
-
-	if (log_callback.object_ptr != NULL) {
-		Z_ADDREF_P(log_callback.object_ptr);
-	}
 
 	mosquitto_log_callback_set(object->client, php_mosquitto_log_callback);
 }
@@ -311,11 +296,6 @@ PHP_METHOD(Mosquitto_Client, onSubscribe)
 
 	object->subscribe_callback = subscribe_callback;
 	object->subscribe_callback_cache = subscribe_callback_cache;
-	Z_ADDREF_P(subscribe_callback.function_name);
-
-	if (subscribe_callback.object_ptr != NULL) {
-		Z_ADDREF_P(subscribe_callback.object_ptr);
-	}
 
 	mosquitto_subscribe_callback_set(object->client, php_mosquitto_subscribe_callback);
 }
@@ -345,11 +325,6 @@ PHP_METHOD(Mosquitto_Client, onUnsubscribe)
 
 	object->unsubscribe_callback = unsubscribe_callback;
 	object->unsubscribe_callback_cache = unsubscribe_callback_cache;
-	Z_ADDREF_P(unsubscribe_callback.function_name);
-
-	if (unsubscribe_callback.object_ptr != NULL) {
-		Z_ADDREF_P(unsubscribe_callback.object_ptr);
-	}
 
 	mosquitto_unsubscribe_callback_set(object->client, php_mosquitto_unsubscribe_callback);
 }
@@ -379,11 +354,6 @@ PHP_METHOD(Mosquitto_Client, onMessage)
 
 	object->message_callback = message_callback;
 	object->message_callback_cache = message_callback_cache;
-	Z_ADDREF_P(message_callback.function_name);
-
-	if (message_callback.object_ptr != NULL) {
-		Z_ADDREF_P(message_callback.object_ptr);
-	}
 
 	mosquitto_message_callback_set(object->client, php_mosquitto_message_callback);
 }

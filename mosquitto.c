@@ -596,14 +596,6 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	mosquitto_loop(client->client, 100, 1);
 	mosquitto_destroy(client->client);
 
-	if (ZEND_FCI_INITIALIZED(client->message_callback)) {
-		Z_DELREF_P(client->message_callback.function_name);
-
-		if (client->message_callback.object_ptr) {
-			Z_DELREF_P(client->message_callback.object_ptr);
-		}
-	}
-
 	if (client->std.properties) {
 		zend_hash_destroy(client->std.properties);
 		FREE_HASHTABLE(client->std.properties);
@@ -701,7 +693,6 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 	object->connect_callback.params = params;
 	object->connect_callback.param_count = 1;
 	object->connect_callback.retval_ptr_ptr = &retval_ptr;
-	object->connect_callback.no_separation = 1;
 
 	if (zend_call_function(&object->connect_callback, &object->connect_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {
@@ -735,7 +726,6 @@ PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq,
 	object->disconnect_callback.params = params;
 	object->disconnect_callback.param_count = 1;
 	object->disconnect_callback.retval_ptr_ptr = &retval_ptr;
-	object->disconnect_callback.no_separation = 1;
 
 	if (zend_call_function(&object->disconnect_callback, &object->disconnect_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {
@@ -775,7 +765,6 @@ PHP_MOSQUITTO_API void php_mosquitto_log_callback(struct mosquitto *mosq, void *
 	object->log_callback.params = params;
 	object->log_callback.param_count = 2;
 	object->log_callback.retval_ptr_ptr = &retval_ptr;
-	object->log_callback.no_separation = 1;
 
 	if (zend_call_function(&object->log_callback, &object->log_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {
@@ -814,7 +803,6 @@ PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, vo
 	object->message_callback.params = params;
 	object->message_callback.param_count = 1;
 	object->message_callback.retval_ptr_ptr = &retval_ptr;
-	object->message_callback.no_separation = 1;
 
 	if (zend_call_function(&object->message_callback, &object->message_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {
@@ -858,7 +846,6 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 	object->subscribe_callback.params = params;
 	object->subscribe_callback.param_count = 3;
 	object->subscribe_callback.retval_ptr_ptr = &retval_ptr;
-	object->subscribe_callback.no_separation = 1;
 
 	if (zend_call_function(&object->subscribe_callback, &object->subscribe_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {
@@ -895,7 +882,6 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 	object->unsubscribe_callback.params = params;
 	object->unsubscribe_callback.param_count = 1;
 	object->unsubscribe_callback.retval_ptr_ptr = &retval_ptr;
-	object->unsubscribe_callback.no_separation = 1;
 
 	if (zend_call_function(&object->unsubscribe_callback, &object->unsubscribe_callback_cache TSRMLS_CC) == FAILURE) {
 		if (!EG(exception)) {

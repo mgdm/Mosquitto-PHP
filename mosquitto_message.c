@@ -28,6 +28,26 @@ PHP_METHOD(Mosquitto_Message, __construct)
 	object = (mosquitto_message_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
 }
 
+/* {{{ Mosquitto\Message::topicMatchesSub() */
+PHP_METHOD(Mosquitto_Message, topicMatchesSub)
+{
+	char *topic = NULL, *subscription = NULL;
+	int topic_len, subscription_len;
+	zend_bool result;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss",
+				&topic, &topic_len, &subscription, &subscription_len) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	mosquitto_topic_matches_sub(subscription, topic, (bool *) &result);
+	RETURN_BOOL(result);
+}
+/* }}} */
+
 PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(mid);
 PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(qos);
 
@@ -326,6 +346,8 @@ static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRML
 }
 
 const zend_function_entry mosquitto_message_methods[] = {
+	PHP_ME(Mosquitto_Message, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Mosquitto_Message, topicMatchesSub, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_FE_END
 };
 

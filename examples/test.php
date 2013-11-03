@@ -6,6 +6,7 @@ $client->onDisconnect('disconnect');
 $client->onSubscribe('subscribe');
 $client->onMessage('message');
 $client->connect("localhost", 1883, 5);
+$client->onLog('logger');
 $client->subscribe('/#', 1);
 
 $client->loopForever();
@@ -24,4 +25,8 @@ function message($message) {
 
 function disconnect() {
 	echo "Disconnected cleanly\n";
+}
+
+function logger() {
+	var_dump(func_get_args());
 }

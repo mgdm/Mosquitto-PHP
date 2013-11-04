@@ -42,6 +42,12 @@ This is the actual Mosquitto client.
 
 1. [__construct](#__construct) - create a new client
 1. [setCredentials](#setcredentials) - set the credentials to use on connection
+1. [setTlsCertificates](#settlscertificates) - set the TLS certificate sources
+1. [setTlsInsecure](#settlsinsecure) - Set verification of the server hostname
+   in TLS certificates
+1. [setTlsOptions](#settlsoptions) - Set advanced TLS options
+1. [setTlsPSK](#settlspsk) - Configure the client for pre-shared-key based TLS
+   support.
 1. [setWill](#setwill) - set the client will, to be delivered if disconnected
    uncleanly
 1. [clearWill](#clearwill) - clear a previously-set will
@@ -82,6 +88,21 @@ called before connect().
 | --- | --- | ---- |
 | Username | string | Username to supply to the broker |
 | Password | string | Password to supply to the broker |
+
+#### setTlsCertificates
+
+Configure the client for certificate based SSL/TLS support.  Must be called
+before connect(). Cannot be used in conjunction with setTlsPSK().
+
+Define the Certificate Authority certificates to be trusted (ie. the server
+certificate must be signed with one of these certificates) using cafile.
+If the server you are connecting to requires clients to provide a certificate,
+define certfile and keyfile with your client certificate and private key.  If
+your private key is encrypted, provide a password callback function or you will
+have to enter the password at the command line.
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
 
 #### setWill
 

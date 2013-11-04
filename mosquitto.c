@@ -7,6 +7,7 @@
 #include "zend_variables.h"
 #include "zend_exceptions.h"
 #include "zend_API.h"
+#include "ext/standard/php_filestat.h"
 #include "ext/standard/info.h"
 #include "php_mosquitto.h"
 
@@ -48,7 +49,7 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 {
 	mosquitto_client_object *object;
 	char *ca_path = NULL, *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
-	int ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len;
+	int ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len, retval = 0;
 	zval *stat;
 	zend_bool is_dir = 0;
 
@@ -65,16 +66,89 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	php_stat(ca_path, ca_path_len, FS_IS_DIR, stat);
+	php_stat(ca_path, ca_path_len, FS_IS_DIR, stat TSRMLS_CC);
 	is_dir = Z_BVAL_P(stat);
 	zval_dtor(stat);
 	FREE_ZVAL(stat);
 
 	if (is_dir) {
-		mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, NULL);
+		retval = mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, NULL);
 	} else {
-		mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, NULL);
+		retval = mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, NULL);
 	}
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setTlsInsecure() */
+PHP_METHOD(Mosquitto_Client, setTlsInsecure)
+{
+	mosquitto_client_object *object;
+	zend_bool value = 0;
+	int retval = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &value) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	retval = mosquitto_tls_insecure_set(object->client, value);
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setTlsOptions() */
+PHP_METHOD(Mosquitto_Client, setTlsOptions)
+{
+	mosquitto_client_object *object;
+	char *tls_version = NULL, *ciphers = NULL;
+	int tls_version_len = 0, ciphers_len = 0, retval = 0;
+	zend_bool verify_peer = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bss",
+				&verify_peer,
+				&tls_version, &tls_version_len,
+				&ciphers, &ciphers_len
+				) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	retval = mosquitto_tls_opts_set(object->client, verify_peer, tls_version, ciphers);
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setTlsPSK() */
+PHP_METHOD(Mosquitto_Client, setTlsPSK)
+{
+	mosquitto_client_object *object;
+	char *psk = NULL, *identity = NULL, *ciphers = NULL;
+	int psk_len = 0, identity_len = 0, ciphers_len = 0, retval = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bss",
+				&psk, &psk_len, &identity, &identity_len, &ciphers, &ciphers_len
+				) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	retval = mosquitto_tls_psk_set(object->client, psk, identity, ciphers);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
 }
@@ -943,6 +1017,10 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, onUnsubscribe, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onMessage, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, getSocket, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsCertificates, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsInsecure, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsOptions, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsPSK, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setWill, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, clearWill, NULL, ZEND_ACC_PUBLIC)

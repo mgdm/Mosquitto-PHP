@@ -14,6 +14,15 @@ zend_class_entry *mosquitto_ce_message;
 static zend_object_handlers mosquitto_message_object_handlers;
 static HashTable php_mosquitto_message_properties;
 
+/* {{{ Arginfo */
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Message_topicMatchesSub_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, topic)
+	ZEND_ARG_INFO(0, subscription)
+ZEND_END_ARG_INFO()
+
+/* }}} */
+
 PHP_METHOD(Mosquitto_Message, __construct)
 {
 	mosquitto_message_object *object;
@@ -347,7 +356,7 @@ static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRML
 
 const zend_function_entry mosquitto_message_methods[] = {
 	PHP_ME(Mosquitto_Message, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
-	PHP_ME(Mosquitto_Message, topicMatchesSub, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	PHP_ME(Mosquitto_Message, topicMatchesSub, Mosquitto_Message_topicMatchesSub_args, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_FE_END
 };
 

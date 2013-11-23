@@ -18,6 +18,74 @@ zend_error_handling mosquitto_original_error_handling;
 
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC);
 
+/* {{{ Arginfo */
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client___construct_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, id)
+	ZEND_ARG_INFO(0, cleanSession)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_callback_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_TYPE_INFO(0, onConnect, IS_CALLABLE, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setCredentials_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, username)
+	ZEND_ARG_INFO(0, password)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setWill_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, topic)
+	ZEND_ARG_INFO(0, payload)
+	ZEND_ARG_INFO(0, qos)
+	ZEND_ARG_INFO(0, retain)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setReconnectDelay_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, reconnectDelay)
+	ZEND_ARG_INFO(0, maxReconnectDelay)
+	ZEND_ARG_INFO(0, exponentialBackoff)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setMessageRetry_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, messageRetry)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_connect_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, host)
+	ZEND_ARG_INFO(0, port)
+	ZEND_ARG_INFO(0, keepalive)
+	ZEND_ARG_INFO(0, interface)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setMaxInFlightMessages_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, max)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_publish_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, topic)
+	ZEND_ARG_INFO(0, payload)
+	ZEND_ARG_INFO(0, qos)
+	ZEND_ARG_INFO(0, retain)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_subscribe_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, topic)
+	ZEND_ARG_INFO(0, qos)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_loop_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, timeout)
+	ZEND_ARG_INFO(0, maxPackets)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_loopForever_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, timeout)
+	ZEND_ARG_INFO(0, maxPackets)
+ZEND_END_ARG_INFO()
+
+/* }}} */
+
 /* {{{ Mosquitto\Client::__construct() */
 PHP_METHOD(Mosquitto_Client, __construct)
 {
@@ -1010,29 +1078,28 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
-	PHP_ME(Mosquitto_Client, onConnect, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, onDisconnect, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, onLog, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, onSubscribe, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, onUnsubscribe, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, onMessage, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, onConnect, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, onDisconnect, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, onLog, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, onSubscribe, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, onUnsubscribe, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, onMessage, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, getSocket, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setTlsCertificates, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setTlsInsecure, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setTlsOptions, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setTlsPSK, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, setCredentials, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, setWill, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, clearWill, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, setReconnectDelay, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, setMessageRetry, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, connect, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setCredentials, Mosquitto_Client_setCredentials_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setWill, Mosquitto_Client_setWill_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setReconnectDelay, Mosquitto_Client_setReconnectDelay_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setMessageRetry, Mosquitto_Client_setMessageRetry_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, connect, Mosquitto_Client_connect_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, disconnect, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, setMaxInFlightMessages, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, publish, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, subscribe, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, loop, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Mosquitto_Client, loopForever, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setMaxInFlightMessages, Mosquitto_Client_setMaxInFlightMessages_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, publish, Mosquitto_Client_publish_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, subscribe, Mosquitto_Client_subscribe_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, loop, Mosquitto_Client_loop_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, loopForever, Mosquitto_Client_loopForever_args, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

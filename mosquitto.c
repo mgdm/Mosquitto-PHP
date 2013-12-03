@@ -812,51 +812,30 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 }
 
 void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC) {
-	char *message = NULL;
+	const char *message;
 
 	switch (retval) {
 		case MOSQ_ERR_SUCCESS:
-		default:
 			return;
-
-		case MOSQ_ERR_INVAL:
-			message = estrdup("Invalid input parameter");
-			break;
-
-		case MOSQ_ERR_NOMEM:
-			message = estrdup("Insufficient memory");
-			break;
-
-		case MOSQ_ERR_NO_CONN:
-			message = estrdup("The client is not connected to a broker");
-			break;
-
-		case MOSQ_ERR_CONN_LOST:
-			message = estrdup("Connection lost");
-			break;
-
-		case MOSQ_ERR_PROTOCOL:
-			message = estrdup("There was a protocol error communicating with the broker.");
-			break;
-
-		case MOSQ_ERR_PAYLOAD_SIZE:
-			message = estrdup("Payload is too large");
-			break;
 
 		case MOSQ_ERR_ERRNO:
 			message = php_mosquitto_strerror_wrapper(errno);
 			break;
+
+		default:
+			message = mosquitto_strerror(retval);
+			break;
 	}
 
-	zend_throw_exception(mosquitto_ce_exception, message, 0 TSRMLS_CC);
-	efree(message);
+	zend_throw_exception(mosquitto_ce_exception, (char *) message, 0 TSRMLS_CC);
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc)
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) obj;
-	zval *retval_ptr = NULL, *rc_zval = NULL;
-	zval **params[1];
+	zval *retval_ptr = NULL, *rc_zval = NULL, *message_zval = NULL;
+	zval **params[2];
+	const char *message;
 #ifdef ZTS
 	TSRMLS_D = object->TSRMLS_C;
 #endif
@@ -869,8 +848,13 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 	ZVAL_LONG(rc_zval, rc);
 	params[0] = &rc_zval;
 
+	message = mosquitto_connack_string(rc);
+	MAKE_STD_ZVAL(message_zval);
+	ZVAL_STRINGL(message_zval, message, strlen(message), 1);
+	params[1] = &message_zval;
+
 	object->connect_callback.params = params;
-	object->connect_callback.param_count = 1;
+	object->connect_callback.param_count = 2;
 	object->connect_callback.retval_ptr_ptr = &retval_ptr;
 
 	if (zend_call_function(&object->connect_callback, &object->connect_callback_cache TSRMLS_CC) == FAILURE) {
@@ -880,6 +864,7 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 	}
 
 	zval_ptr_dtor(&rc_zval);
+	zval_ptr_dtor(&message_zval);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);

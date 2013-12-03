@@ -50,3 +50,9 @@
 /run-tests.php
 /tmp-php.ini
 .svn
+/tests/**/*.diff
+/tests/**/*.exp
+/tests/**/*.log
+/tests/**/*.out
+/tests/**/*.php
+/tests/**/*.sh

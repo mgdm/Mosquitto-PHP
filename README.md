@@ -140,6 +140,7 @@ The callback should take parameters of the form:
 | Parameter | Type | Description |
 | --- | --- | ---- |
 | rc | int | Response code from the broker. |
+| message | string | String description of the response code. |
 
 Response codes are as follows:
 

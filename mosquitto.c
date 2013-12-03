@@ -744,8 +744,9 @@ void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC) {
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc)
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) obj;
-	zval *retval_ptr = NULL, *rc_zval = NULL;
-	zval **params[1];
+	zval *retval_ptr = NULL, *rc_zval = NULL, *message_zval = NULL;
+	zval **params[2];
+	const char *message;
 #ifdef ZTS
 	TSRMLS_D = object->TSRMLS_C;
 #endif
@@ -758,8 +759,13 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 	ZVAL_LONG(rc_zval, rc);
 	params[0] = &rc_zval;
 
+	message = mosquitto_connack_string(rc);
+	MAKE_STD_ZVAL(message_zval);
+	ZVAL_STRINGL(message_zval, message, strlen(message), 1);
+	params[1] = &message_zval;
+
 	object->connect_callback.params = params;
-	object->connect_callback.param_count = 1;
+	object->connect_callback.param_count = 2;
 	object->connect_callback.retval_ptr_ptr = &retval_ptr;
 
 	if (zend_call_function(&object->connect_callback, &object->connect_callback_cache TSRMLS_CC) == FAILURE) {
@@ -769,6 +775,7 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 	}
 
 	zval_ptr_dtor(&rc_zval);
+	zval_ptr_dtor(&message_zval);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);

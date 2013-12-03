@@ -11,8 +11,8 @@ $client->subscribe('/#', 1);
 
 $client->loopForever();
 
-function connect($r) {
-	echo "I got code {$r}\n";
+function connect($r, $message) {
+	echo "I got code {$r} and message {$message}\n";
 }
 
 function subscribe() {

@@ -18,6 +18,7 @@ zend_object_handlers mosquitto_std_object_handlers;
 ZEND_DECLARE_MODULE_GLOBALS(mosquitto)
 
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC);
+static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata);
 
 /* {{{ Arginfo */
 
@@ -121,6 +122,7 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	int ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len, retval = 0;
 	zval *stat;
 	zend_bool is_dir = 0;
+	int (*pw_callback)(char *, int, int, void *) = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s!|s!s!s!",
@@ -148,10 +150,16 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	is_dir = Z_BVAL_P(stat);
 	zval_dtor(stat);
 
+	if (key_pw != NULL) {
+		pw_callback = php_mosquitto_pw_callback;
+		MQTTG(client_key) = estrdup(key_pw);
+		MQTTG(client_key_len) = key_pw_len;
+	}
+
 	if (is_dir) {
-		retval = mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, NULL);
+		retval = mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, pw_callback);
 	} else {
-		retval = mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, NULL);
+		retval = mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, pw_callback);
 	}
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
@@ -1068,6 +1076,14 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);
 	}
+}
+
+static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata) {
+	TSRMLS_FETCH();
+
+	strncpy(buf, MQTTG(client_key), size);
+	efree(MQTTG(client_key));
+	return MQTTG(client_key_len);
 }
 
 /* {{{ mosquitto_client_methods */

@@ -128,6 +128,7 @@ static int php_mosquitto_message_write_##name(mosquitto_message_object *mosquitt
 
 ZEND_BEGIN_MODULE_GLOBALS(mosquitto)
 	char *client_key;
+	int client_key_len;
 	zend_object_handlers mosquitto_std_object_handlers;
 	zend_error_handling mosquitto_original_error_handling;
 ZEND_END_MODULE_GLOBALS(mosquitto)

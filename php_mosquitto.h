@@ -78,10 +78,10 @@ typedef struct _php_mosquitto_prop_handler {
 
 
 #define PHP_MOSQUITTO_ERROR_HANDLING() \
-	zend_replace_error_handling(EH_THROW, mosquitto_ce_exception, &mosquitto_original_error_handling TSRMLS_CC)
+	zend_replace_error_handling(EH_THROW, mosquitto_ce_exception, &MQTTG(mosquitto_original_error_handling) TSRMLS_CC)
 
 #define PHP_MOSQUITTO_RESTORE_ERRORS() \
-	zend_restore_error_handling(&mosquitto_original_error_handling TSRMLS_CC)
+	zend_restore_error_handling(&MQTTG(mosquitto_original_error_handling) TSRMLS_CC)
 
 
 
@@ -126,9 +126,19 @@ static int php_mosquitto_message_write_##name(mosquitto_message_object *mosquitt
 	return SUCCESS; \
 }
 
+ZEND_BEGIN_MODULE_GLOBALS(mosquitto)
+	char *client_key;
+	zend_object_handlers mosquitto_std_object_handlers;
+	zend_error_handling mosquitto_original_error_handling;
+ZEND_END_MODULE_GLOBALS(mosquitto)
 
-extern zend_object_handlers mosquitto_std_object_handlers;
-extern zend_error_handling mosquitto_original_error_handling;
+#ifdef ZTS
+# define MQTTG(v) TSRMG(mosquitto_globals_id, zend_mosquitto_globals *, v)
+#else
+# define MQTTG(v) (mosquitto_globals.v)
+#endif
+
+ZEND_EXTERN_MODULE_GLOBALS(mosquitto)
 
 extern zend_class_entry *mosquitto_ce_exception;
 extern zend_class_entry *mosquitto_ce_client;

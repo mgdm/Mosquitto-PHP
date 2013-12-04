@@ -122,7 +122,7 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	zend_bool is_dir = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sss", 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s!|s!s!s!",
 				&ca_path, &ca_path_len,
 				&cert_path, &cert_path_len,
 				&key_path, &key_path_len,
@@ -130,6 +130,15 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
+
+	if ((php_check_open_basedir(ca_path TSRMLS_CC) < 0) ||
+		(php_check_open_basedir(cert_path TSRMLS_CC) < 0) ||
+		(php_check_open_basedir(key_path TSRMLS_CC) < 0))
+	{
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
@@ -137,7 +146,6 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	php_stat(ca_path, ca_path_len, FS_IS_DIR, stat TSRMLS_CC);
 	is_dir = Z_BVAL_P(stat);
 	zval_dtor(stat);
-	FREE_ZVAL(stat);
 
 	if (is_dir) {
 		retval = mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, NULL);

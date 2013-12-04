@@ -166,6 +166,7 @@ The callback should take parameters of the form:
 | Parameter | Type | Description |
 | --- | --- | ---- |
 | rc | int | Reason for the disconnection. 0 means the client requested it. Any other value indicates an unexpected disconnection. |
+| message | string | String description of the response code. |
 
 #### onLog
 

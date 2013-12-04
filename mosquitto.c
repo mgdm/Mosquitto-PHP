@@ -775,6 +775,7 @@ PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq,
 
 	MAKE_STD_ZVAL(rc_zval);
 	ZVAL_LONG(rc_zval, rc);
+	params[0] = &rc_zval;
 
 	object->disconnect_callback.params = params;
 	object->disconnect_callback.param_count = 1;

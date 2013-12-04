@@ -13,7 +13,8 @@
 zend_class_entry *mosquitto_ce_client;
 zend_class_entry *mosquitto_ce_exception;
 zend_object_handlers mosquitto_std_object_handlers;
-zend_error_handling mosquitto_original_error_handling;
+
+ZEND_DECLARE_MODULE_GLOBALS(mosquitto)
 
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC);
 
@@ -996,7 +997,11 @@ zend_module_entry mosquitto_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
 	"0.1", /* Replace with version number for your extension */
 #endif
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(mosquitto),
+	NULL,
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
 

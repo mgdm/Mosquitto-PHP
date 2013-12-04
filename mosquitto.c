@@ -197,7 +197,7 @@ PHP_METHOD(Mosquitto_Client, setTlsOptions)
 	zend_bool verify_peer = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bss",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bs!s!",
 				&verify_peer,
 				&tls_version, &tls_version_len,
 				&ciphers, &ciphers_len
@@ -223,7 +223,7 @@ PHP_METHOD(Mosquitto_Client, setTlsPSK)
 	int psk_len = 0, identity_len = 0, ciphers_len = 0, retval = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bss",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s!s!|s!",
 				&psk, &psk_len, &identity, &identity_len, &ciphers, &ciphers_len
 				) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();

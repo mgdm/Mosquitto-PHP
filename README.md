@@ -98,8 +98,8 @@ Define the Certificate Authority certificates to be trusted (ie. the server
 certificate must be signed with one of these certificates) using cafile.
 If the server you are connecting to requires clients to provide a certificate,
 define certfile and keyfile with your client certificate and private key.  If
-your private key is encrypted, provide a password callback function or you will
-have to enter the password at the command line.
+your private key is encrypted, provide the password as the fourth parameter, or
+you will have to enter the password at the command line.
 
 | Parameter | Type | Description |
 | --- | --- | ---- |

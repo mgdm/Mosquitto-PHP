@@ -103,6 +103,41 @@ you will have to enter the password at the command line.
 
 | Parameter | Type | Description |
 | --- | --- | ---- |
+| capath | string | Path to the PEM encoded trusted CA certificate files, or to a directory containing them |
+| certfile | string | Path to the PEM encoded certificate file for this client. Optional. |
+| keyfile | string | Path to a file containing the PEM encoded private key for this client. Required if certfile is set. |
+| password | string | The password for the keyfile, if it is encrypted. If null, the password will be asked for on the command line. | 
+
+#### setTlsInsecure
+
+Configure verification of the server hostname in the server certificate.  If
+value is set to true, it is impossible to guarantee that the host you are
+connecting to is not impersonating your server. Do not use this function in
+a real system. Must be called before connect().
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
+| value | boolean | If set to false, the default, certificate hostname checking is performed.  If set to true, no hostname checking is performed and the connection is insecure. |
+
+#### setTlsOptions
+
+Set advanced SSL/TLS options.  Must be called before connect().
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
+| certReqs | int | Whether or not to verify the server. Can be Mosquitto\Client::SSL_VERIFY_NONE, to disable certificate verification, or Mosquitto\Client::SSL_VERIFY_PEER (the default), to verify the server certificate. |
+| tlsVersion | string | The TLS version to use. If NULL, a default is used. The default value depends on the version of OpenSSL the library was compiled against. Available options on OpenSSL >= 1.0.1 are 'tlsv1.2', 'tlsv1.1' and 'tlsv1'. |
+| cipers | string | A string describing the ciphers available for use. See the `openssl ciphers` tool for more information. If NULL, the default set will be used. |
+
+#### setTlsPSK
+
+Configure the client for pre-shared-key based TLS support.  Must be called before connect(). Cannot be used in conjunction with setTlsCertificates.
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
+| psk | string | The pre-shared key in hex format with no leading "0x".
+| identity | string " The identity of this client. May be used as the username depending on server settings. |
+| cipers | string | A string describing the ciphers available for use. See the `openssl ciphers` tool for more information. If NULL, the default set will be used. |
 
 #### setWill
 

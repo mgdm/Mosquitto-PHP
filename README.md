@@ -335,7 +335,7 @@ properties.
 | qos | int | The QoS value applied to this message. |
 | retain | bool | Whether this is a retained message or not. |
 
-This class has one static method.
+This class has two static methods.
 
 #### topicMatchesSub
 
@@ -346,6 +346,14 @@ otherwise false.
 | --- | --- | ---- |
 | topic | string | The topic to match |
 | subscription | string | The subscription to match |
+
+#### tokeniseTopic
+
+Tokenise a topic or subscription string into an array of strings representing the topic hierarchy.
+
+| Parameter | Type | Description |
+| --- | --- | ---- |
+| topic | string | The topic to tokenise |
 
 ### Class Mosquitto\Exception
 

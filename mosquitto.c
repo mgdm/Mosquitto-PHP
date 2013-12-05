@@ -7,6 +7,7 @@
 #include "zend_variables.h"
 #include "zend_exceptions.h"
 #include "zend_API.h"
+#include "ext/standard/php_filestat.h"
 #include "ext/standard/info.h"
 #include "php_mosquitto.h"
 
@@ -17,6 +18,7 @@ zend_object_handlers mosquitto_std_object_handlers;
 ZEND_DECLARE_MODULE_GLOBALS(mosquitto)
 
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC);
+static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata);
 
 /* {{{ Arginfo */
 
@@ -109,6 +111,131 @@ PHP_METHOD(Mosquitto_Client, __construct)
 		zend_throw_exception(mosquitto_ce_exception, message, 1 TSRMLS_CC);
 		efree(message);
 	}
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setTlsCertificates() */
+PHP_METHOD(Mosquitto_Client, setTlsCertificates)
+{
+	mosquitto_client_object *object;
+	char *ca_path = NULL, *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
+	int ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len, retval = 0;
+	zval *stat;
+	zend_bool is_dir = 0;
+	int (*pw_callback)(char *, int, int, void *) = NULL;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s!|s!s!s!",
+				&ca_path, &ca_path_len,
+				&cert_path, &cert_path_len,
+				&key_path, &key_path_len,
+				&key_pw, &key_pw_len) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+
+	if ((php_check_open_basedir(ca_path TSRMLS_CC) < 0) ||
+		(php_check_open_basedir(cert_path TSRMLS_CC) < 0) ||
+		(php_check_open_basedir(key_path TSRMLS_CC) < 0))
+	{
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	php_stat(ca_path, ca_path_len, FS_IS_DIR, stat TSRMLS_CC);
+	is_dir = Z_BVAL_P(stat);
+	zval_dtor(stat);
+
+	if (key_pw != NULL) {
+		pw_callback = php_mosquitto_pw_callback;
+		MQTTG(client_key) = estrdup(key_pw);
+		MQTTG(client_key_len) = key_pw_len;
+	}
+
+	if (is_dir) {
+		retval = mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, pw_callback);
+	} else {
+		retval = mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, pw_callback);
+	}
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setTlsInsecure() */
+PHP_METHOD(Mosquitto_Client, setTlsInsecure)
+{
+	mosquitto_client_object *object;
+	zend_bool value = 0;
+	int retval = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &value) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	retval = mosquitto_tls_insecure_set(object->client, value);
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setTlsOptions() */
+PHP_METHOD(Mosquitto_Client, setTlsOptions)
+{
+	mosquitto_client_object *object;
+	char *tls_version = NULL, *ciphers = NULL;
+	int tls_version_len = 0, ciphers_len = 0, retval = 0;
+	zend_bool verify_peer = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bs!s!",
+				&verify_peer,
+				&tls_version, &tls_version_len,
+				&ciphers, &ciphers_len
+				) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	retval = mosquitto_tls_opts_set(object->client, verify_peer, tls_version, ciphers);
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setTlsPSK() */
+PHP_METHOD(Mosquitto_Client, setTlsPSK)
+{
+	mosquitto_client_object *object;
+	char *psk = NULL, *identity = NULL, *ciphers = NULL;
+	int psk_len = 0, identity_len = 0, ciphers_len = 0, retval = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s!s!|s!",
+				&psk, &psk_len, &identity, &identity_len, &ciphers, &ciphers_len
+				) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	retval = mosquitto_tls_psk_set(object->client, psk, identity, ciphers);
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
 }
 /* }}} */
 
@@ -951,6 +1078,14 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 	}
 }
 
+static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata) {
+	TSRMLS_FETCH();
+
+	strncpy(buf, MQTTG(client_key), size);
+	efree(MQTTG(client_key));
+	return MQTTG(client_key_len);
+}
+
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
@@ -961,6 +1096,10 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, onUnsubscribe, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onMessage, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, getSocket, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsCertificates, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsInsecure, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsOptions, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setTlsPSK, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setCredentials, Mosquitto_Client_setCredentials_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setWill, Mosquitto_Client_setWill_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setReconnectDelay, Mosquitto_Client_setReconnectDelay_args, ZEND_ACC_PUBLIC)
@@ -1024,15 +1163,18 @@ PHP_MINIT_FUNCTION(mosquitto)
 	mosquitto_ce_exception = zend_register_internal_class_ex(&exception_ce,
 			zend_exception_get_default(TSRMLS_C), "Exception" TSRMLS_CC);
 
-	#define REGISTER_MOSQUITTO_LOG_LONG_CONST(const_name, value) \
+	#define REGISTER_MOSQUITTO_LONG_CONST(const_name, value) \
 	zend_declare_class_constant_long(mosquitto_ce_client, const_name, sizeof(const_name)-1, (long)value TSRMLS_CC); \
 	REGISTER_LONG_CONSTANT(#value,  value,  CONST_CS | CONST_PERSISTENT);
 
-	REGISTER_MOSQUITTO_LOG_LONG_CONST("LOG_INFO", MOSQ_LOG_INFO);
-	REGISTER_MOSQUITTO_LOG_LONG_CONST("LOG_NOTICE", MOSQ_LOG_NOTICE);
-	REGISTER_MOSQUITTO_LOG_LONG_CONST("LOG_WARNING", MOSQ_LOG_WARNING);
-	REGISTER_MOSQUITTO_LOG_LONG_CONST("LOG_ERR", MOSQ_LOG_ERR);
-	REGISTER_MOSQUITTO_LOG_LONG_CONST("LOG_DEBUG", MOSQ_LOG_DEBUG);
+	REGISTER_MOSQUITTO_LONG_CONST("LOG_INFO", MOSQ_LOG_INFO);
+	REGISTER_MOSQUITTO_LONG_CONST("LOG_NOTICE", MOSQ_LOG_NOTICE);
+	REGISTER_MOSQUITTO_LONG_CONST("LOG_WARNING", MOSQ_LOG_WARNING);
+	REGISTER_MOSQUITTO_LONG_CONST("LOG_ERR", MOSQ_LOG_ERR);
+	REGISTER_MOSQUITTO_LONG_CONST("LOG_DEBUG", MOSQ_LOG_DEBUG);
+	
+	REGISTER_MOSQUITTO_LONG_CONST("SSL_VERIFY_NONE", 0);
+	REGISTER_MOSQUITTO_LONG_CONST("SSL_VERIFY_PEER", 1);
 
 	mosquitto_lib_init();
 

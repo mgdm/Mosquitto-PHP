@@ -1134,7 +1134,7 @@ zend_module_entry mosquitto_module_entry = {
 	NULL,
 	PHP_MINFO(mosquitto),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.1", /* Replace with version number for your extension */
+	PHP_MOSQUITTO_VERSION,
 #endif
 	PHP_MODULE_GLOBALS(mosquitto),
 	NULL,
@@ -1200,7 +1200,15 @@ PHP_MINFO_FUNCTION(mosquitto)
 
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Mosquitto support", "enabled");
+    php_info_print_table_colspan_header(2,
+#ifdef COMPILE_DL_MOSQUITTO
+        "Compiled as dynamic module"
+#else
+        "Compiled as static module"
+#endif
+		);
 	php_info_print_table_row(2, "libmosquitto version", tmp);
+	php_info_print_table_row(2, "Extension version", PHP_MOSQUITTO_VERSION);
 	php_info_print_table_end();
 }
 /* }}} */

@@ -82,7 +82,11 @@ PHP_METHOD(Mosquitto_Message, tokeniseTopic)
 
 	array_init(return_value);
 	for (i = 0; i < count; i++) {
-		add_next_index_string(return_value, topics[i], 1);
+		if (topics[i] == NULL) {
+			add_next_index_null(return_value);
+		} else {
+			add_next_index_string(return_value, topics[i], 1);
+		}
 	}
 
 	mosquitto_sub_topic_tokens_free(&topics, count);

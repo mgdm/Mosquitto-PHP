@@ -28,7 +28,11 @@ ZEND_BEGIN_ARG_INFO(Mosquitto_Client___construct_args, ZEND_SEND_BY_VAL)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(Mosquitto_Client_callback_args, ZEND_SEND_BY_VAL)
+#if PHP_VERSION_ID > 50400
 	ZEND_ARG_TYPE_INFO(0, onConnect, IS_CALLABLE, 0)
+#else
+	ZEND_ARG_INFO(0, onConnect)
+#endif
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setCredentials_args, ZEND_SEND_BY_VAL)

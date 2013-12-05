@@ -21,6 +21,10 @@ ZEND_BEGIN_ARG_INFO(Mosquitto_Message_topicMatchesSub_args, ZEND_SEND_BY_VAL)
 	ZEND_ARG_INFO(0, subscription)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(Mosquitto_Message_tokeniseTopic_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, topic)
+ZEND_END_ARG_INFO()
+
 /* }}} */
 
 PHP_METHOD(Mosquitto_Message, __construct)
@@ -54,6 +58,38 @@ PHP_METHOD(Mosquitto_Message, topicMatchesSub)
 
 	mosquitto_topic_matches_sub(subscription, topic, (bool *) &result);
 	RETURN_BOOL(result);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Message::tokeniseTopic() */
+PHP_METHOD(Mosquitto_Message, tokeniseTopic)
+{
+	char *topic = NULL, **topics = NULL;
+	int topic_len = 0, retval = 0, count = 0, i = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &topic, &topic_len) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+
+	retval = mosquitto_sub_topic_tokenise(topic, &topics, &count);
+
+	if (retval == MOSQ_ERR_NOMEM) {
+		zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Failed to tokenise topic");
+		return;
+	}
+
+	array_init(return_value);
+	for (i = 0; i < count; i++) {
+		if (topics[i] == NULL) {
+			add_next_index_null(return_value);
+		} else {
+			add_next_index_string(return_value, topics[i], 1);
+		}
+	}
+
+	mosquitto_sub_topic_tokens_free(&topics, count);
 }
 /* }}} */
 
@@ -357,6 +393,7 @@ static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRML
 const zend_function_entry mosquitto_message_methods[] = {
 	PHP_ME(Mosquitto_Message, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Mosquitto_Message, topicMatchesSub, Mosquitto_Message_topicMatchesSub_args, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	PHP_ME(Mosquitto_Message, tokeniseTopic, Mosquitto_Message_tokeniseTopic_args, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_FE_END
 };
 

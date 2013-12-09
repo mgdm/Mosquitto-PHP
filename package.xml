@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.4.7" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
     <name>Mosquitto</name>
-    <channel>pecl.mgdm.net</channel>
+    <channel>pecl.php.net</channel>
     <summary>Extension for libmosquitto</summary>
     <description>Mosquitto provides support for the MQTT protocol, including publishing, subscribing, and an event loop.</description>
     <lead>
@@ -12,13 +12,11 @@
     </lead>
 
     <date>2013-12-05</date>
-    <version><release>0.2.0</release><api>0.2.0</api></version>
+    <version><release>0.2.1</release><api>0.2.0</api></version>
     <stability><release>alpha</release><api>alpha</api></stability>
 	<license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
- <notes>
-      * Now feature-complete, with all functionality in libmosquitto available.
-      * TLS support.
-      * Numerous bugfixes.
+	<notes>
+	 * Fix compatibility with PHP 5.3
     </notes>
 
     <contents>

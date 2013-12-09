@@ -5,16 +5,15 @@ This is an extension to allow using the [Mosquitto MQTT library](http://mosquitt
 ## Requirements
 
 * PHP 5.3+
-* libmosquitto 1.2.1 (this is the only version I have tested)
+* libmosquitto 1.2.x
 * Linux or Mac OS X. I do not have a Windows machine handy, though patches or
   pull requests are of course very welcome!
 
 ## Installation
 
-You may obtain this package using [my PECL channel](http://pecl.mgdm.net), if you prefer:
+You may obtain this package using [PECL](http://pecl.php.net):
 
 ````
-pecl channel-discover pecl.mgdm.net
 pecl install Mosquitto-alpha
 ````
 

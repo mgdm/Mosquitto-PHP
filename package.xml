@@ -23,7 +23,7 @@
        <dir name="/">
             <file role="doc" name="README.md"/>
             <file role="doc" name="CREDITS"/>
-            <file role="doc" name="LICENCE"/>
+            <file role="doc" name="LICENSE"/>
 
             <file role="src" name="php_mosquitto.h"/>
 

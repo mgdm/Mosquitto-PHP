@@ -39,7 +39,7 @@ if test "$PHP_MOSQUITTO" != "no"; then
   # --with-mosquitto -> check for lib and symbol presence
   LIBNAME=mosquitto # you may want to change this
 
-  PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $MOSQUITTO_DIR/lib, MOSQUITTO_SHARED_LIBADD)
+  PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $MOSQUITTO_DIR/$PHP_LIBDIR, MOSQUITTO_SHARED_LIBADD)
   
   PHP_SUBST(MOSQUITTO_SHARED_LIBADD)
 

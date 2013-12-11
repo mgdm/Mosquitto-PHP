@@ -367,7 +367,7 @@ static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRML
 	mosquitto_message_object *message_obj;
 
 	message_obj = ecalloc(1, sizeof(mosquitto_message_object));
-	message_obj->std.ce = mosquitto_ce_message;
+	message_obj->std.ce = ce;
 
 #ifdef ZTS
 	message_obj->TSRMLS_C = TSRMLS_C;

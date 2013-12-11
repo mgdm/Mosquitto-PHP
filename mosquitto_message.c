@@ -365,6 +365,9 @@ static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRML
 
 	zend_object_value retval;
 	mosquitto_message_object *message_obj;
+#if PHP_VERSION_ID < 50399
+	zval *temp;
+#endif
 
 	message_obj = ecalloc(1, sizeof(mosquitto_message_object));
 	message_obj->std.ce = ce;

@@ -764,7 +764,11 @@ PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 #ifdef STRERROR_R_CHAR_P
 	return strerror_r(err, buf, 256);
 #else
-	return strerror_r(err, buf, 256) ? buf : NULL;
+	if (!strerror_r(err, buf, 256)) {
+		return buf;
+	}
+	efree(buf);
+	return NULL;
 #endif
 }
 

@@ -29,16 +29,12 @@ ZEND_END_ARG_INFO()
 
 PHP_METHOD(Mosquitto_Message, __construct)
 {
-	mosquitto_message_object *object;
-
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters_none() == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
 	PHP_MOSQUITTO_RESTORE_ERRORS();
-
-	object = (mosquitto_message_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
 }
 
 /* {{{ Mosquitto\Message::topicMatchesSub() */
@@ -369,7 +365,6 @@ static zend_object_value mosquitto_message_object_new(zend_class_entry *ce TSRML
 
 	zend_object_value retval;
 	mosquitto_message_object *message_obj;
-	zval *temp;
 
 	message_obj = ecalloc(1, sizeof(mosquitto_message_object));
 	message_obj->std.ce = mosquitto_ce_message;

@@ -124,7 +124,7 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	mosquitto_client_object *object;
 	char *ca_path = NULL, *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
 	int ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len, retval = 0;
-	zval *stat;
+	zval stat;
 	zend_bool is_dir = 0;
 	int (*pw_callback)(char *, int, int, void *) = NULL;
 
@@ -150,9 +150,8 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	php_stat(ca_path, ca_path_len, FS_IS_DIR, stat TSRMLS_CC);
-	is_dir = Z_BVAL_P(stat);
-	zval_dtor(stat);
+	php_stat(ca_path, ca_path_len, FS_IS_DIR, &stat TSRMLS_CC);
+	is_dir = Z_BVAL(stat);
 
 	if (key_pw != NULL) {
 		pw_callback = php_mosquitto_pw_callback;
@@ -365,10 +364,7 @@ PHP_METHOD(Mosquitto_Client, connect)
 PHP_METHOD(Mosquitto_Client, disconnect)
 {
 	mosquitto_client_object *object;
-	char *host = NULL, *interface = NULL;
-	int host_len, interface_len, retval;
-	long port = 1883;
-	long keepalive = 0;
+	int retval;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters_none() == FAILURE) {
@@ -631,7 +627,6 @@ PHP_METHOD(Mosquitto_Client, setMaxInFlightMessages)
 PHP_METHOD(Mosquitto_Client, setMessageRetry)
 {
 	mosquitto_client_object *object;
-	int retval;
 	long retry = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
@@ -726,7 +721,6 @@ PHP_METHOD(Mosquitto_Client, loop)
 {
 	mosquitto_client_object *object;
 	long timeout = 1000, max_packets = 1, retval = 0;
-	char *message = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ll",
@@ -747,7 +741,6 @@ PHP_METHOD(Mosquitto_Client, loopForever)
 {
 	mosquitto_client_object *object;
 	long timeout = 1000, max_packets = 1, retval = 0;
-	char *message = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ll",
@@ -768,12 +761,15 @@ PHP_METHOD(Mosquitto_Client, loopForever)
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 {
 	char *buf = ecalloc(256, sizeof(char));
-	POSSIBLY_UNUSED char *bbuf = buf;
 #ifdef STRERROR_R_CHAR_P
-	bbuf =
+	return strerror_r(err, buf, 256);
+#else
+	if (!strerror_r(err, buf, 256)) {
+		return buf;
+	}
+	efree(buf);
+	return NULL;
 #endif
-		strerror_r(err, buf, 256);
-	return bbuf;
 }
 
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC)

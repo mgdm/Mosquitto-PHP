@@ -360,6 +360,37 @@ PHP_METHOD(Mosquitto_Client, connect)
 }
 /* }}} */
 
+/* {{{ Mosquitto\Client::connectAsync() */
+PHP_METHOD(Mosquitto_Client, connectAsync)
+{
+	mosquitto_client_object *object;
+	char *host = NULL, *interface = NULL;
+	int host_len, interface_len, retval;
+	long port = 1883;
+	long keepalive = 0;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lls!",
+				&host, &host_len, &port, &keepalive,
+				&interface, &interface_len)  == FAILURE) {
+
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
+
+	if (interface == NULL) {
+		retval = mosquitto_connect_async(object->client, host, port, keepalive);
+	} else {
+		retval = mosquitto_connect_bind_async(object->client, host, port, keepalive, interface);
+	}
+
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
 /* {{{ Mosquitto\Client::disconnect() */
 PHP_METHOD(Mosquitto_Client, disconnect)
 {
@@ -756,6 +787,26 @@ PHP_METHOD(Mosquitto_Client, loopForever)
 }
 /* }}} */
 
+/* {{{ Mosquitto\Client::loopStart() */
+PHP_METHOD(Mosquitto_Client, loopStart)
+{
+	mosquitto_client_object *object;
+	long timeout = 1000, max_packets = 1, retval = 0;
+	char *message = NULL;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters_none() == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
+	retval = mosquitto_loop_start(object->client);
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
 /* Internal functions */
 
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
@@ -1105,12 +1156,14 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, setReconnectDelay, Mosquitto_Client_setReconnectDelay_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setMessageRetry, Mosquitto_Client_setMessageRetry_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, connect, Mosquitto_Client_connect_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, connectAsync, Mosquitto_Client_connect_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, disconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setMaxInFlightMessages, Mosquitto_Client_setMaxInFlightMessages_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, publish, Mosquitto_Client_publish_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, subscribe, Mosquitto_Client_subscribe_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loop, Mosquitto_Client_loop_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loopForever, Mosquitto_Client_loopForever_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, loopStart, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

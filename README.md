@@ -372,6 +372,8 @@ Call loop() in an infinite blocking loop. Callbacks will be called as required.
 This will handle reconnecting if the connection is lost. Call disconnect() in
 a callback to return from the loop.
 
+Note: exceptions thrown in callbacks do not currently cause the loop to exit. To work around this, use loop() and wrap your own loop structure around it such as a while().
+
 | Parameter | Type | Description |
 | --- | --- | ---- |
 | timeout | int | Optional. Number of milliseconds to wait for network activity. Pass 0 for instant timeout. Defaults to 1000. |

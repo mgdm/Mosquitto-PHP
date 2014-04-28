@@ -7,9 +7,17 @@ $client->onSubscribe('subscribe');
 $client->onMessage('message');
 $client->connect("localhost", 1883, 5);
 $client->onLog('logger');
-$client->subscribe('/#', 1);
+$client->subscribe('#', 1);
 
-$client->loopForever();
+for ($i = 0; $i < 10; $i++) {
+    $client->loop();
+}
+
+$client->unsubscribe('#');
+
+for ($i = 0; $i < 10; $i++) {
+    $client->loop();
+}
 
 function connect($r, $message) {
 	echo "I got code {$r} and message {$message}\n";
@@ -17,6 +25,10 @@ function connect($r, $message) {
 
 function subscribe() {
 	echo "Subscribed to a topic\n";
+}
+
+function unsubscribe() {
+	echo "Unsubscribed from a topic\n";
 }
 
 function message($message) {

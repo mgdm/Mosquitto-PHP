@@ -1,7 +1,7 @@
 #ifndef PHP_MOSQUITTO_H
 #define PHP_MOSQUITTO_H
 
-#define PHP_MOSQUITTO_VERSION "0.2.1"
+#define PHP_MOSQUITTO_VERSION "0.2.2"
 
 extern zend_module_entry mosquitto_module_entry;
 #define phpext_mosquitto_ptr &mosquitto_module_entry

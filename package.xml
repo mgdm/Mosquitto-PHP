@@ -11,12 +11,12 @@
      <active>yes</active>
     </lead>
 
-    <date>2013-12-05</date>
-    <version><release>0.2.1</release><api>0.2.0</api></version>
+    <date>2014-04-28</date>
+    <version><release>0.2.2</release><api>0.2.0</api></version>
     <stability><release>alpha</release><api>alpha</api></stability>
 	<license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
 	<notes>
-	 * Fix compatibility with PHP 5.3
+	 * Add missing unsubscribe method
     </notes>
 
     <contents>

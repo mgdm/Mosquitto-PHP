@@ -80,6 +80,10 @@ ZEND_BEGIN_ARG_INFO(Mosquitto_Client_subscribe_args, ZEND_SEND_BY_VAL)
 	ZEND_ARG_INFO(0, qos)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_unsubscribe_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, topic)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO(Mosquitto_Client_loop_args, ZEND_SEND_BY_VAL)
 	ZEND_ARG_INFO(0, timeout)
 	ZEND_ARG_INFO(0, maxPackets)
@@ -1109,6 +1113,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, setMaxInFlightMessages, Mosquitto_Client_setMaxInFlightMessages_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, publish, Mosquitto_Client_publish_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, subscribe, Mosquitto_Client_subscribe_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, unsubscribe, Mosquitto_Client_unsubscribe_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loop, Mosquitto_Client_loop_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loopForever, Mosquitto_Client_loopForever_args, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}

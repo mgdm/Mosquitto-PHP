@@ -762,6 +762,13 @@ PHP_METHOD(Mosquitto_Client, loopForever)
 
 /* Internal functions */
 
+#if defined(PHP_WIN32)
+static int strerror_r(int errnum, char *buf, size_t buf_len)
+{
+	return strerror_s(buf, buf_len, errnum);
+}
+#endif
+
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 {
 	char *buf = ecalloc(256, sizeof(char));
@@ -1156,10 +1163,11 @@ ZEND_GET_MODULE(mosquitto)
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(mosquitto)
 {
+	zend_class_entry client_ce, exception_ce;
+
 	memcpy(&mosquitto_std_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	mosquitto_std_object_handlers.clone_obj = NULL;
 
-	zend_class_entry client_ce, exception_ce;
 	INIT_NS_CLASS_ENTRY(client_ce, "Mosquitto", "Client", mosquitto_client_methods);
 	mosquitto_ce_client = zend_register_internal_class_ex(&client_ce, NULL, NULL TSRMLS_CC);
 	mosquitto_ce_client->create_object = mosquitto_client_object_new;

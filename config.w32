@@ -1,0 +1,16 @@
+
+ARG_WITH("mosquitto", "include hrtime support", "no");
+
+if (PHP_MOSQUITTO != "no") {
+	if (CHECK_HEADER_ADD_INCLUDE("mosquitto.h", "CFLAGS_MOSQUITTO", PHP_PHP_BUILD + "\\include;" + PHP_MOSQUITTO)
+			&& CHECK_LIB("mosquitto.lib", "mosquitto", PHP_PHP_BUILD + "\\lib;" + PHP_MOSQUITTO)) {
+
+		EXTENSION('mosquitto', 'mosquitto.c mosquitto_message.c');
+		AC_DEFINE('HAVE_MOSQUITTO', 1);
+
+	} else {
+		WARNING("mosquitto not enabled; libraries and headers not found");
+	}
+
+}
+

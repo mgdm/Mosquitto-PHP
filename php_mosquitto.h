@@ -155,7 +155,7 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq, void *client_obj, int mid);
 PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq, void *obj, int rc);
 
-char *php_mosquitto_strerror_wrapper(int err);
+PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err);
 void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC);
 
 PHP_MINIT_FUNCTION(mosquitto);

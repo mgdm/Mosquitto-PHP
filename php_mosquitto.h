@@ -88,6 +88,14 @@ typedef struct _php_mosquitto_prop_handler {
 	zend_restore_error_handling(&MQTTG(mosquitto_original_error_handling) TSRMLS_CC)
 
 
+#define PHP_MOSQUITTO_FREE_CALLBACK(CALLBACK) \
+    if (ZEND_FCI_INITIALIZED(client->CALLBACK ## _callback)) { \
+        zval_ptr_dtor(&client->CALLBACK ## _callback.function_name); \
+    } \
+ \
+	if (client->CALLBACK ## _callback.object_ptr != NULL) { \
+		zval_ptr_dtor(&client->CALLBACK ## _callback.object_ptr); \
+	}
 
 
 #define PHP_MOSQUITTO_MESSAGE_PROPERTY_ENTRY_RECORD(name) \

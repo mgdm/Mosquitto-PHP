@@ -762,7 +762,7 @@ PHP_METHOD(Mosquitto_Client, loopForever)
 		php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
 
 		if (EG(exception)) {
-			return;
+			break;
 		}
 	}
 }
@@ -832,6 +832,13 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	mosquitto_disconnect(client->client);
 	mosquitto_loop(client->client, 100, 1);
 	mosquitto_destroy(client->client);
+
+	PHP_MOSQUITTO_FREE_CALLBACK(connect);
+	PHP_MOSQUITTO_FREE_CALLBACK(subscribe);
+	PHP_MOSQUITTO_FREE_CALLBACK(unsubscribe);
+	PHP_MOSQUITTO_FREE_CALLBACK(message);
+	PHP_MOSQUITTO_FREE_CALLBACK(disconnect);
+	PHP_MOSQUITTO_FREE_CALLBACK(log);
 
 	if (client->std.properties) {
 		zend_hash_destroy(client->std.properties);
@@ -995,8 +1002,8 @@ PHP_MOSQUITTO_API void php_mosquitto_log_callback(struct mosquitto *mosq, void *
 		}
 	}
 
-	zval_ptr_dtor(&level_zval);
-	zval_ptr_dtor(&str_zval);
+	zval_ptr_dtor(params[0]);
+	zval_ptr_dtor(params[1]);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);

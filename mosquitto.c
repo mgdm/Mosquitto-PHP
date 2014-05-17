@@ -1048,6 +1048,7 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 
 	zval_ptr_dtor(params[0]);
 	zval_ptr_dtor(params[1]);
+	zval_ptr_dtor(params[2]);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);

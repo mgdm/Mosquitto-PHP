@@ -755,8 +755,33 @@ PHP_METHOD(Mosquitto_Client, loopForever)
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
-	retval = mosquitto_loop_forever(object->client, timeout, max_packets);
-	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	object->looping = 1;
+
+	while (object->looping) {
+		retval = mosquitto_loop(object->client, timeout, max_packets);
+		php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+
+		if (EG(exception)) {
+			break;
+		}
+	}
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::exitLoop() */
+PHP_METHOD(Mosquitto_Client, exitLoop)
+{
+	mosquitto_client_object *object;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters_none() == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
+	php_mosquitto_exit_loop(object);
 }
 /* }}} */
 
@@ -783,6 +808,11 @@ PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 #endif
 }
 
+PHP_MOSQUITTO_API void php_mosquitto_exit_loop(mosquitto_client_object *object)
+{
+	object->looping = 0;
+}
+
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC)
 {
     mosquitto_client_object *pobj = zend_object_store_get_object(zobj TSRMLS_CC);
@@ -802,6 +832,13 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	mosquitto_disconnect(client->client);
 	mosquitto_loop(client->client, 100, 1);
 	mosquitto_destroy(client->client);
+
+	PHP_MOSQUITTO_FREE_CALLBACK(connect);
+	PHP_MOSQUITTO_FREE_CALLBACK(subscribe);
+	PHP_MOSQUITTO_FREE_CALLBACK(unsubscribe);
+	PHP_MOSQUITTO_FREE_CALLBACK(message);
+	PHP_MOSQUITTO_FREE_CALLBACK(disconnect);
+	PHP_MOSQUITTO_FREE_CALLBACK(log);
 
 	if (client->std.properties) {
 		zend_hash_destroy(client->std.properties);
@@ -965,8 +1002,8 @@ PHP_MOSQUITTO_API void php_mosquitto_log_callback(struct mosquitto *mosq, void *
 		}
 	}
 
-	zval_ptr_dtor(&level_zval);
-	zval_ptr_dtor(&str_zval);
+	zval_ptr_dtor(params[0]);
+	zval_ptr_dtor(params[1]);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);
@@ -1048,6 +1085,7 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 
 	zval_ptr_dtor(params[0]);
 	zval_ptr_dtor(params[1]);
+	zval_ptr_dtor(params[2]);
 
 	if (retval_ptr != NULL) {
 		zval_ptr_dtor(&retval_ptr);
@@ -1099,7 +1137,7 @@ static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *user
 
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
-	PHP_ME(Mosquitto_Client, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Mosquitto_Client, __construct, Mosquitto_Client___construct_args, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Mosquitto_Client, onConnect, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onDisconnect, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onLog, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
@@ -1123,6 +1161,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, unsubscribe, Mosquitto_Client_unsubscribe_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loop, Mosquitto_Client_loop_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, loopForever, Mosquitto_Client_loopForever_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, exitLoop, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

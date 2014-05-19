@@ -53,6 +53,8 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info log_callback;
 	zend_fcall_info_cache log_callback_cache;
 
+    int looping;
+
 #ifdef ZTS
 	TSRMLS_D;
 #endif
@@ -86,6 +88,14 @@ typedef struct _php_mosquitto_prop_handler {
 	zend_restore_error_handling(&MQTTG(mosquitto_original_error_handling) TSRMLS_CC)
 
 
+#define PHP_MOSQUITTO_FREE_CALLBACK(CALLBACK) \
+    if (ZEND_FCI_INITIALIZED(client->CALLBACK ## _callback)) { \
+        zval_ptr_dtor(&client->CALLBACK ## _callback.function_name); \
+    } \
+ \
+	if (client->CALLBACK ## _callback.object_ptr != NULL) { \
+		zval_ptr_dtor(&client->CALLBACK ## _callback.object_ptr); \
+	}
 
 
 #define PHP_MOSQUITTO_MESSAGE_PROPERTY_ENTRY_RECORD(name) \
@@ -157,6 +167,7 @@ PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq,
 
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err);
 void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC);
+void php_mosquitto_exit_loop(mosquitto_client_object *object);
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MINIT_FUNCTION(mosquitto_message);

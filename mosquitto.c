@@ -6,6 +6,7 @@
 #include "php_ini.h"
 #include "zend_variables.h"
 #include "zend_exceptions.h"
+#include "zend_interfaces.h"
 #include "zend_API.h"
 #include "ext/standard/php_filestat.h"
 #include "ext/standard/info.h"
@@ -153,6 +154,7 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	object->secure = 1;
 
 	php_stat(ca_path, ca_path_len, FS_IS_DIR, &stat TSRMLS_CC);
 	is_dir = Z_BVAL(stat);
@@ -239,6 +241,7 @@ PHP_METHOD(Mosquitto_Client, setTlsPSK)
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	object->secure = 1;
 
 	retval = mosquitto_tls_psk_set(object->client, psk, identity, ciphers);
 
@@ -337,15 +340,16 @@ PHP_METHOD(Mosquitto_Client, setReconnectDelay)
 PHP_METHOD(Mosquitto_Client, connect)
 {
 	mosquitto_client_object *object;
-	char *host = NULL, *interface = NULL;
+	char *host = NULL, *interface = NULL, *connect_host = NULL;
 	int host_len, interface_len, retval;
 	long port = 1883;
 	long keepalive = 0;
+	zend_bool use_srv = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lls!",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lls!b",
 				&host, &host_len, &port, &keepalive,
-				&interface, &interface_len)  == FAILURE) {
+				&interface, &interface_len, &use_srv)  == FAILURE) {
 
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
@@ -354,10 +358,24 @@ PHP_METHOD(Mosquitto_Client, connect)
 
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
 
+	if (use_srv) {
+		connect_host = php_mosquitto_resolve_srv(host, object->secure TSRMLS_CC);
+		if (connect_host == NULL) {
+			zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Failed to resolve SRV records for host %s", host);
+			return;
+		}
+	} else {
+		connect_host = host;
+	}
+
 	if (interface == NULL) {
 		retval = mosquitto_connect(object->client, host, port, keepalive);
 	} else {
 		retval = mosquitto_connect_bind(object->client, host, port, keepalive, interface);
+	}
+
+	if (use_srv) {
+		efree(connect_host);
 	}
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
@@ -806,6 +824,68 @@ PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 	efree(buf);
 	return NULL;
 #endif
+}
+
+/* Use PHP's internal DNS APIs to resolve the SRV records for a given host */
+PHP_MOSQUITTO_API char *php_mosquitto_resolve_srv(const char *host, int secure TSRMLS_DC)
+{
+	zval *result = NULL, **result_data = NULL, **tmp = NULL;
+	zval *host_zval = NULL, *record_type = NULL;
+	char srv_record[256], *result_record;
+	HashTable *result_hash;
+	int array_count = 0, host_len = 0;
+
+	if (secure) {
+		host_len = slprintf(srv_record, sizeof(srv_record), "_secure-mqtt._tcp.%s", host);
+	} else {
+		host_len = slprintf(srv_record, sizeof(srv_record), "_mqtt._tcp.%s", host);
+	}
+
+	ALLOC_INIT_ZVAL(record_type);
+	ZVAL_LONG(record_type, 0x02000000);
+	ALLOC_INIT_ZVAL(host_zval);
+	ZVAL_STRINGL(host_zval, srv_record, host_len, 1);
+
+	zend_call_method_with_2_params(NULL, NULL, NULL, "dns_get_record", &result, host_zval, record_type);
+
+	zval_ptr_dtor(&record_type);
+	zval_ptr_dtor(&host_zval);
+
+	if (Z_TYPE_P(result) != IS_ARRAY) {
+		zval_ptr_dtor(&result);
+		return NULL;
+	}
+
+	result_hash = Z_ARRVAL_P(result);
+	array_count = zend_hash_num_elements(result_hash);
+
+	if (array_count == 0) {
+		zval_ptr_dtor(&result);
+		return NULL;
+	}
+
+	/* Get the first record. FIXME: Do this properly, see RFC2782 */
+	zend_hash_internal_pointer_reset(result_hash);
+	if (zend_hash_get_current_data(result_hash, (void **) &result_data) != SUCCESS) {
+		zval_ptr_dtor(&result);
+		return NULL;
+	}
+
+	if (Z_TYPE_PP(result_data) != IS_ARRAY) {
+		zval_ptr_dtor(&result);
+		return NULL;
+	}
+
+	if (zend_hash_find(Z_ARRVAL_PP(result_data), "target", sizeof("target"), (void **) &tmp) != SUCCESS) {
+		zval_ptr_dtor(&result);
+		return NULL;
+	}
+
+	result_record = estrdup(Z_STRVAL_PP(tmp));
+
+	zval_ptr_dtor(&result);
+
+	return result_record;
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_exit_loop(mosquitto_client_object *object)

@@ -35,7 +35,7 @@ ZEND_BEGIN_ARG_INFO(Mosquitto_Client_callback_args, ZEND_SEND_BY_VAL)
 #endif
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(Mosquitto_Client_libVersion_args, ZEND_SEND_BY_VAL)
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_libVersion_args, ZEND_SEND_BY_REF)
 	ZEND_ARG_INFO(0, major)
 	ZEND_ARG_INFO(0, minor)
 	ZEND_ARG_INFO(0, revision)
@@ -131,24 +131,26 @@ PHP_METHOD(Mosquitto_Client, __construct)
 /* {{{ Mosquitto\Client::libVersion() */
 PHP_METHOD(Mosquitto_Client, libVersion)
 {
-	int major = 0;
-	int minor = 0;
-	int revision = 0;
+	zval *major = 0;
+	zval *minor = 0;
+	zval *revision = 0;
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters (ZEND_NUM_ARGS() TSRMLS_CC, "|lll", &major, &minor, &revision) == FAILURE) {
+	if (zend_parse_parameters (ZEND_NUM_ARGS() TSRMLS_CC, "|zzz", &major, &minor, &revision) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		RETURN_NULL();
-
 	}
 	PHP_MOSQUITTO_RESTORE_ERRORS();
-	if(major) {
-		RETURN_LONG(LIBMOSQUITTO_MAJOR);
+	if (major) {
+		convert_to_long(major);
+		ZVAL_LONG(major, LIBMOSQUITTO_MAJOR);
 	}
-	if(minor) {
-		RETURN_LONG(LIBMOSQUITTO_MINOR);
+	if (minor) {
+		convert_to_long(minor);
+		ZVAL_LONG(minor, LIBMOSQUITTO_MINOR);
 	}
-	if(revision) {
-		RETURN_LONG(LIBMOSQUITTO_REVISION);
+	if (revision) {
+		convert_to_long(revision);
+		ZVAL_LONG(revision, LIBMOSQUITTO_REVISION);
 	}
 }
 /* }}} */
@@ -1169,7 +1171,7 @@ static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *user
 /* {{{ mosquitto_client_methods */
 const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, __construct, Mosquitto_Client___construct_args, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
-	PHP_ME(Mosquitto_Client, libVersion, Mosquitto_Client_libVersion_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, libVersion, Mosquitto_Client_libVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_ME(Mosquitto_Client, onConnect, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onDisconnect, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, onLog, Mosquitto_Client_callback_args, ZEND_ACC_PUBLIC)

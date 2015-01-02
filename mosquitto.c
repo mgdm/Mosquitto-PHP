@@ -170,6 +170,7 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	}
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 
@@ -219,6 +220,7 @@ PHP_METHOD(Mosquitto_Client, setTlsOptions)
 	retval = mosquitto_tls_opts_set(object->client, verify_peer, tls_version, ciphers);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 
@@ -243,6 +245,7 @@ PHP_METHOD(Mosquitto_Client, setTlsPSK)
 	retval = mosquitto_tls_psk_set(object->client, psk, identity, ciphers);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 
@@ -361,6 +364,7 @@ PHP_METHOD(Mosquitto_Client, connect)
 	}
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 

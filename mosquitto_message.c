@@ -68,6 +68,7 @@ PHP_METHOD(Mosquitto_Message, tokeniseTopic)
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	retval = mosquitto_sub_topic_tokenise(topic, &topics, &count);
 

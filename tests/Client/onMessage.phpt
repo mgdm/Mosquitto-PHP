@@ -6,11 +6,6 @@ if (!extension_loaded('mosquitto')) die('skip - Mosquitto extension not availabl
 <?php
 include(dirname(__DIR__) . '/setup.php');
 
-function errorHandler($errno, $errstr, $errfile, $errline) {
-    printf("Caught error %d (%s) in %s on line %d\n", $errno, $errstr, $errfile, $errline);
-}
-set_error_handler('errorHandler');
-
 try {
     $client = new Mosquitto\Client;
     $client->onMessage('foo');

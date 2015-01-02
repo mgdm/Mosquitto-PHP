@@ -21,6 +21,7 @@ var_dump($client);
 $client = new Mosquitto\Client(null, true);
 var_dump($client);
 
+/* Null ID and no clean session should fail */
 $client = new Mosquitto\Client(null, false);
 var_dump($client);
 

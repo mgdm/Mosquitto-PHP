@@ -384,6 +384,7 @@ PHP_METHOD(Mosquitto_Client, disconnect)
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
 
 	retval = mosquitto_disconnect(object->client);
+	php_mosquitto_exit_loop(object);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
 }

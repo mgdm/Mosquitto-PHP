@@ -7,8 +7,8 @@ $defaults = array(
 );
 
 foreach ($defaults as $index => $default) {
-    if (isset($_ENV[$index])) {
-        define($index, $_ENV[$index]);
+    if (getenv($index)) {
+        define($index, getenv($index));
     } else {
         define($index, $default);
     }

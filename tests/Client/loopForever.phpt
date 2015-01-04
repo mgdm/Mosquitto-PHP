@@ -19,7 +19,7 @@ $client->onConnect(function() use ($client) {
     $client->exitLoop();
 });
 
-$client->connect('localhost');
+$client->connect(TEST_MQTT_HOST);
 $client->loopForever();
 
 ?>

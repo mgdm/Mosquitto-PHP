@@ -24,7 +24,7 @@ $client->onDisconnect(function() {
     echo "Disconnected\n";
 });
 
-$client->connect('localhost');
+$client->connect(TEST_MQTT_HOST);
 $client->loopForever();
 
 ?>

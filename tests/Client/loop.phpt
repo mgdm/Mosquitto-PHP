@@ -15,7 +15,7 @@ try {
 }
 
 $client = new Mosquitto\Client;
-$client->connect('localhost');
+$client->connect(TEST_MQTT_HOST);
 
 for ($i = 0; $i < 3; $i++) {
     echo "Looping\n";

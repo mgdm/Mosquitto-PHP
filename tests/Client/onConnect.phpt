@@ -19,7 +19,7 @@ $client->onConnect(function() {
     var_dump(func_get_args());
 });
 
-$client->connect('localhost');
+$client->connect(TEST_MQTT_HOST);
 
 for ($i = 0; $i < 2; $i++) {
     $client->loop();

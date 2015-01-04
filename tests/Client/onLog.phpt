@@ -21,7 +21,7 @@ $client = new Mosquitto\Client;
 $client->onLog('logger');
 var_dump($client);
 
-$client->connect('localhost');
+$client->connect(TEST_MQTT_HOST);
 $client->loop();
 $client->loop();
 ?>

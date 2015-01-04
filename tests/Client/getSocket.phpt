@@ -11,7 +11,7 @@ include(dirname(__DIR__) . '/setup.php');
 $client = new Client();
 var_dump($client->getSocket());
 
-$client->connect('localhost');
+$client->connect(TEST_MQTT_HOST);
 var_dump($client->getSocket() > 0);
 ?>
 --EXPECTF--

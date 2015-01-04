@@ -21,11 +21,11 @@ $client->onMessage(function($m) {
     var_dump($m);
 });
 
-$client->connect('localhost');
+$client->connect(TEST_MQTT_HOST);
 $client->subscribe('#', 1);
 
 $client2 = new Mosquitto\Client;
-$client2->connect('localhost');
+$client2->connect(TEST_MQTT_HOST);
 $client2->publish('test', 'test', 1);
 
 for ($i = 0; $i < 3; $i++) {

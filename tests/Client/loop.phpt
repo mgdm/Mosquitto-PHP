@@ -14,6 +14,28 @@ try {
     var_dump($e->getMessage());
 }
 
+/* No params */
+$client = new Mosquitto\Client;
+$client->connect(TEST_MQTT_HOST);
+
+for ($i = 0; $i < 3; $i++) {
+    echo "Looping\n";
+    $client->loop();
+}
+
+unset ($client);
+
+/* Zero param */
+$client = new Mosquitto\Client;
+$client->connect(TEST_MQTT_HOST);
+
+for ($i = 0; $i < 3; $i++) {
+    echo "Looping\n";
+    $client->loop(0);
+}
+
+unset ($client);
+
 $client = new Mosquitto\Client;
 $client->connect(TEST_MQTT_HOST);
 
@@ -25,6 +47,12 @@ for ($i = 0; $i < 3; $i++) {
 ?>
 --EXPECTF--
 string(38) "The client is not currently connected."
+Looping
+Looping
+Looping
+Looping
+Looping
+Looping
 Looping
 Looping
 Looping

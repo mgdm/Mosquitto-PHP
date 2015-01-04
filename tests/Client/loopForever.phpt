@@ -13,6 +13,7 @@ try {
     var_dump($e->getMessage());
 }
 
+/* No params */
 $client = new Mosquitto\Client;
 $client->onConnect(function() use ($client) {
     echo "Exiting loop\n";
@@ -21,8 +22,33 @@ $client->onConnect(function() use ($client) {
 
 $client->connect(TEST_MQTT_HOST);
 $client->loopForever();
+unset ($client);
+
+/* Zero param */
+$client = new Mosquitto\Client;
+$client->onConnect(function() use ($client) {
+    echo "Exiting loop\n";
+    $client->exitLoop();
+});
+
+$client->connect(TEST_MQTT_HOST);
+$client->loopForever(0);
+unset ($client);
+
+/* Proper param */
+$client = new Mosquitto\Client;
+$client->onConnect(function() use ($client) {
+    echo "Exiting loop\n";
+    $client->exitLoop();
+});
+
+$client->connect(TEST_MQTT_HOST);
+$client->loopForever(100);
+unset ($client);
 
 ?>
 --EXPECTF--
 string(38) "The client is not currently connected."
+Exiting loop
+Exiting loop
 Exiting loop

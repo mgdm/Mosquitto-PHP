@@ -22,8 +22,8 @@ $client->onLog('logger');
 var_dump($client);
 
 $client->connect(TEST_MQTT_HOST);
-$client->loop();
-$client->loop();
+$client->loop(50);
+$client->loop(50);
 ?>
 --EXPECTF--
 Caught error 4096 (Argument 1 passed to Mosquitto\Client::onLog() must be callable, string given) in %s on line %d

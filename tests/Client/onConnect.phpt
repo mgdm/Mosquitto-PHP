@@ -22,7 +22,7 @@ $client->onConnect(function() {
 $client->connect(TEST_MQTT_HOST);
 
 for ($i = 0; $i < 2; $i++) {
-    $client->loop();
+    $client->loop(50);
 }
 ?>
 --EXPECTF--

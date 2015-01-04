@@ -18,3 +18,7 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
     printf("Caught error %d (%s) in %s on line %d\n", $errno, $errstr, $errfile, $errline);
 }
 set_error_handler('errorHandler');
+
+function writeException(Exception $e) {
+    printf("Caught %s with code %d and message: %s\n", get_class($e), $e->getCode(), $e->getMessage());
+}

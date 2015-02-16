@@ -65,18 +65,19 @@ try {
 }
 
 try {
-    $client->publish('topic', 'payload', 1, false);
+    $client->publish('topic', 'payload', 1, true);
     echo "Done\n";
 } catch (Mosquitto\Exception $e) {
     writeException($e);
 }
 
 try {
-    $client->publish('topic', 'payload', 1, true);
+    $client->publish('topic', 'payload', 1, false);
     echo "Done\n";
 } catch (Mosquitto\Exception $e) {
     writeException($e);
 }
+
 
 try {
     $client->publish('topic', 'payload');
@@ -85,26 +86,25 @@ try {
     writeException($e);
 }
 
-unset ($client);
-$client = new Mosquitto\Client;
+$client2 = new Mosquitto\Client();
 $looping = true;
 
-$client->onConnect(function() use ($client) {
-    $client->subscribe('#', 0);
-    $client->publish('foo', 'hello', 0);
+$client2->onConnect(function() use ($client2) {
+    $client2->subscribe('publish', 0);
+    $client2->publish('publish', 'hello', 0);
 });
 
-$client->onMessage(function($m) use ($client, &$looping) {
+$client2->onMessage(function($m) use ($client2, &$looping) {
     var_dump($m);
-    $client->disconnect();
+    $client2->disconnect();
     $looping = false;
 });
 
-$client->connect(TEST_MQTT_HOST);
+$client2->connect(TEST_MQTT_HOST);
 
 for ($i = 0; $i < 10; $i++) {
     if (!$looping) break;
-    $client->loop(50);
+    $client2->loop(50);
 }
 
 ?>
@@ -122,13 +122,13 @@ Caught Mosquitto\Exception with code 0 and message: The client is not currently 
 Caught Mosquitto\Exception with code 0 and message: The client is not currently connected.
 object(Mosquitto\Message)#%d (5) {
   ["mid"]=>
-  int(0)
+  int(%d)
   ["topic"]=>
-  string(5) "topic"
+  string(7) "publish"
   ["payload"]=>
-  string(7) "payload"
+  string(5) "hello"
   ["qos"]=>
   int(0)
   ["retain"]=>
-  bool(true)
+  bool(false)
 }

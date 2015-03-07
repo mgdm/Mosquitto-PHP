@@ -613,7 +613,7 @@ PHP_METHOD(Mosquitto_Client, getSocket)
 	}
 
 	php_sock = emalloc(sizeof *php_sock);
-	php_sock->bsd_socket = mosquitto_socket(object->client);
+	php_sock->bsd_socket = socket;
 	php_sock->type = AF_INET;
 	php_sock->error = 0;
 	php_sock->blocking = 1;

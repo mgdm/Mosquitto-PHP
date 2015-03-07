@@ -609,7 +609,6 @@ PHP_METHOD(Mosquitto_Client, getSocket)
 	socket = mosquitto_socket(object->client);
 	if (socket < 0) {
 		zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Unable to create socket resource");
-		efree(php_sock);
 		return;
 	}
 

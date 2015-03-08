@@ -56,3 +56,5 @@
 /tests/**/*.out
 /tests/**/*.php
 /tests/**/*.sh
+
+/tests/certs

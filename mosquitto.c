@@ -202,10 +202,10 @@ PHP_METHOD(Mosquitto_Client, setTlsOptions)
 	mosquitto_client_object *object;
 	char *tls_version = NULL, *ciphers = NULL;
 	int tls_version_len = 0, ciphers_len = 0, retval = 0;
-	zend_bool verify_peer = 0;
+	int verify_peer = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bs!s!",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|s!s!",
 				&verify_peer,
 				&tls_version, &tls_version_len,
 				&ciphers, &ciphers_len

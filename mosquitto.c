@@ -838,6 +838,10 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	mosquitto_loop(client->client, 100, 1);
 	mosquitto_destroy(client->client);
 
+	if (MQTTG(client_key_len) > 0) {
+		efree(MQTTG(client_key));
+	}
+
 	PHP_MOSQUITTO_FREE_CALLBACK(connect);
 	PHP_MOSQUITTO_FREE_CALLBACK(subscribe);
 	PHP_MOSQUITTO_FREE_CALLBACK(unsubscribe);
@@ -1134,10 +1138,14 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 
 static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata) {
 	TSRMLS_FETCH();
+	int key_len;
 
 	strncpy(buf, MQTTG(client_key), size);
+	key_len = MQTTG(client_key_len);
 	efree(MQTTG(client_key));
-	return MQTTG(client_key_len);
+	MQTTG(client_key_len) = 0;
+
+	return key_len;
 }
 
 /* {{{ mosquitto_client_methods */

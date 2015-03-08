@@ -1,9 +1,13 @@
 <?php
+
+define('CERTIFICATE_DIR', __DIR__ . '/certs/');
+
 $defaults = array(
     'TEST_MQTT_HOST' => 'localhost',
     'TEST_MQTT_PORT' => 1883,
     'TEST_MQTT_TLS_PORT' => 8883,
     'TEST_MQTT_TLS_CERT_PORT' => 8884,
+    'TEST_MQTT_TLS_PSK_PORT' => 8885,
 );
 
 foreach ($defaults as $index => $default) {

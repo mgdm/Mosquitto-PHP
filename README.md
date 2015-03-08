@@ -135,8 +135,8 @@ Configure the client for pre-shared-key based TLS support.  Must be called befor
 | Parameter | Type | Description |
 | --- | --- | ---- |
 | psk | string | The pre-shared key in hex format with no leading "0x".
-| identity | string " The identity of this client. May be used as the username depending on server settings. |
-| cipers | string | A string describing the ciphers available for use. See the `openssl ciphers` tool for more information. If NULL, the default set will be used. |
+| identity | string | The identity of this client. May be used as the username depending on server settings. |
+| cipers | string | Optional. A string describing the ciphers available for use. See the `openssl ciphers` tool for more information. If NULL, the default set will be used. |
 
 #### setWill
 

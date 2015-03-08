@@ -22,8 +22,12 @@ $client = new Mosquitto\Client(null, true);
 var_dump($client);
 
 /* Null ID and no clean session should fail */
-$client = new Mosquitto\Client(null, false);
-var_dump($client);
+/* Behaviour varies between OSX and Linux in Mosquitto 1.4 */
+try {
+    $client = new Mosquitto\Client(null, false);
+} catch (Exception $e) {
+    echo "Caught exception.";
+}
 
 ?>
 --EXPECTF--
@@ -37,9 +41,4 @@ object(Mosquitto\Client)#%d (%d) {
 }
 object(Mosquitto\Client)#%d (%d) {
 }
-
-Fatal error: Uncaught exception 'Mosquitto\Exception' with message 'Invalid argument' in %s
-Stack trace:
-#0 %s: Mosquitto\Client->__construct(NULL, false)
-#1 {main}
-  thrown in %s
+Caught exception.

@@ -887,7 +887,6 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 
 void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC) {
 	const char *message;
-	int own_string = 0;
 
 	switch (retval) {
 		case MOSQ_ERR_SUCCESS:
@@ -895,7 +894,6 @@ void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC) {
 
 		case MOSQ_ERR_ERRNO:
 			message = php_mosquitto_strerror_wrapper(errno);
-			own_string = 1;
 			break;
 
 		default:
@@ -904,9 +902,6 @@ void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC) {
 	}
 
 	zend_throw_exception(mosquitto_ce_exception, (char *) message, 0 TSRMLS_CC);
-	if (own_string) {
-		efree((void *) message);
-	}
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc)

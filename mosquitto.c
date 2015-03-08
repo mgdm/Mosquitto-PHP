@@ -106,7 +106,7 @@ PHP_METHOD(Mosquitto_Client, __construct)
 	zend_bool clean_session = 1;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sb", &id, &id_len, &clean_session) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s!b", &id, &id_len, &clean_session) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
@@ -171,6 +171,7 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	}
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 
@@ -202,10 +203,10 @@ PHP_METHOD(Mosquitto_Client, setTlsOptions)
 	mosquitto_client_object *object;
 	char *tls_version = NULL, *ciphers = NULL;
 	int tls_version_len = 0, ciphers_len = 0, retval = 0;
-	zend_bool verify_peer = 0;
+	int verify_peer = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "bs!s!",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|s!s!",
 				&verify_peer,
 				&tls_version, &tls_version_len,
 				&ciphers, &ciphers_len
@@ -220,6 +221,7 @@ PHP_METHOD(Mosquitto_Client, setTlsOptions)
 	retval = mosquitto_tls_opts_set(object->client, verify_peer, tls_version, ciphers);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 
@@ -244,6 +246,7 @@ PHP_METHOD(Mosquitto_Client, setTlsPSK)
 	retval = mosquitto_tls_psk_set(object->client, psk, identity, ciphers);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 
@@ -362,6 +365,7 @@ PHP_METHOD(Mosquitto_Client, connect)
 	}
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+	RETURN_LONG(retval);
 }
 /* }}} */
 
@@ -381,6 +385,7 @@ PHP_METHOD(Mosquitto_Client, disconnect)
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
 
 	retval = mosquitto_disconnect(object->client);
+	php_mosquitto_exit_loop(object);
 
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
 }
@@ -850,6 +855,10 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	mosquitto_loop(client->client, 100, 1);
 	mosquitto_destroy(client->client);
 
+	if (MQTTG(client_key_len) > 0) {
+		efree(MQTTG(client_key));
+	}
+
 	PHP_MOSQUITTO_FREE_CALLBACK(connect);
 	PHP_MOSQUITTO_FREE_CALLBACK(subscribe);
 	PHP_MOSQUITTO_FREE_CALLBACK(unsubscribe);
@@ -1146,10 +1155,14 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 
 static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata) {
 	TSRMLS_FETCH();
+	int key_len;
 
 	strncpy(buf, MQTTG(client_key), size);
+	key_len = MQTTG(client_key_len);
 	efree(MQTTG(client_key));
-	return MQTTG(client_key_len);
+	MQTTG(client_key_len) = 0;
+
+	return key_len;
 }
 
 /* {{{ mosquitto_client_methods */
@@ -1168,6 +1181,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, setTlsPSK, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setCredentials, Mosquitto_Client_setCredentials_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setWill, Mosquitto_Client_setWill_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, clearWill, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setReconnectDelay, Mosquitto_Client_setReconnectDelay_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setMessageRetry, Mosquitto_Client_setMessageRetry_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, connect, Mosquitto_Client_connect_args, ZEND_ACC_PUBLIC)

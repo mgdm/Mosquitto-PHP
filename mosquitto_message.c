@@ -68,6 +68,7 @@ PHP_METHOD(Mosquitto_Message, tokeniseTopic)
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	retval = mosquitto_sub_topic_tokenise(topic, &topics, &count);
 
@@ -151,6 +152,10 @@ static int php_mosquitto_message_write_topic(mosquitto_message_object *mosquitto
 		newval = &ztmp;
 	}
 
+	if (mosquitto_object->message.topic && mosquitto_object->owned_topic) {
+		efree(mosquitto_object->message.topic);
+	}
+
 	mosquitto_object->message.topic = estrdup(Z_STRVAL_P(newval));
 	mosquitto_object->owned_topic = 1;
 
@@ -169,6 +174,11 @@ static int php_mosquitto_message_write_payload(mosquitto_message_object *mosquit
 		zval_copy_ctor(&ztmp);
 		convert_to_string(&ztmp);
 		newval = &ztmp;
+	}
+
+	if (mosquitto_object->message.payload && mosquitto_object->owned_payload) {
+		efree(mosquitto_object->message.payload);
+		mosquitto_object->message.payloadlen = 0;
 	}
 
 	mosquitto_object->message.payload = estrdup(Z_STRVAL_P(newval));

@@ -1,0 +1,14 @@
+language: c
+
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get -y install libc-ares-dev libssl-dev uuid-dev
+
+before_script:
+    - ./travis/compile-mosquitto.sh
+    - ./travis/compile-php.sh
+    - ./travis/compile-ext.sh
+
+script:
+    - ./travis/run-tests.sh
+

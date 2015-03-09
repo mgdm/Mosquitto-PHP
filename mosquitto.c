@@ -613,8 +613,8 @@ PHP_METHOD(Mosquitto_Client, getSocket)
 
 	if (object->socket_zval != NULL) {
 		zval_dtor(return_value);
-		return_value = object->socket_zval;
-		Z_ADDREF_P(return_value);
+		*return_value = *object->socket_zval;
+		zval_copy_ctor(return_value);
 		return;
 	}
 

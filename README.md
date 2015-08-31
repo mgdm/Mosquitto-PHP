@@ -61,7 +61,7 @@ This is the actual Mosquitto client.
 1. [onLog](#onlog) - set the logging callback
 1. [onSubscribe](#onsubscribe) - set the subscribe callback
 1. [onMessage](#onmessage) - set the callback fired when a message is received
-1. [onPublish](#onPublish) - set the callback fired when a message is published
+1. [onPublish](#onpublish) - set the callback fired when a message is published
 1. [setMaxInFlightMessages](#setmaxinflightmessages) - set the number of QoS
    1 and 2 messages that can be "in flight" at once
 1. [setMessageRetry](#setmessageretry) - set the number of seconds to wait

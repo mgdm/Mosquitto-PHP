@@ -58,3 +58,6 @@
 /tests/**/*.sh
 
 /tests/certs
+
+.idea/
+CMakeLists.txt

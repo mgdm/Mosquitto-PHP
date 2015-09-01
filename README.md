@@ -61,6 +61,7 @@ This is the actual Mosquitto client.
 1. [onLog](#onlog) - set the logging callback
 1. [onSubscribe](#onsubscribe) - set the subscribe callback
 1. [onMessage](#onmessage) - set the callback fired when a message is received
+1. [onPublish](#onpublish) - set the callback fired when a message is published
 1. [setMaxInFlightMessages](#setmaxinflightmessages) - set the number of QoS
    1 and 2 messages that can be "in flight" at once
 1. [setMessageRetry](#setmessageretry) - set the number of seconds to wait
@@ -296,6 +297,24 @@ The callback should take parameters of the form:
 | message | Mosquitto\Message | A Message object containing the message data |
 
 
+#### onPublish
+
+Set the publish callback, This is called when a message is publish by the client itself.
+
+**Warning**: this may be called before the method `Mosquitto\Client::publish` return the
+message id, so, you need to create a queue to deal with the mid list
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| callback | callback | The callback |
+
+The callback should take parameters of the form:
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| mid | int | the message id returned by `Mosquitto\Client::publish` |
+
+
 #### setMaxInFlightMessages
 
 Set the number of QoS 1 and 2 messages that can be “in flight” at one time.  An
@@ -328,6 +347,9 @@ Publish a message on a given topic.
 | payload | string | The message payload |
 | qos | int | Integer value 0, 1 or 2 indicating the QoS for this message |
 | retain | boolean | If true, make this message retained |
+
+return `int` the message id in broker system
+**Warning** the message id is not unique
 
 #### subscribe
 

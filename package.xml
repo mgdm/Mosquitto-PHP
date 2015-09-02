@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.4.7" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
     <name>Mosquitto</name>
-    <channel>pecl.mgdm.net</channel>
+    <channel>pecl.php.net</channel>
     <summary>Extension for libmosquitto</summary>
     <description>Mosquitto provides support for the MQTT protocol, including publishing, subscribing, and an event loop.</description>
     <lead>
@@ -11,12 +11,16 @@
      <active>yes</active>
     </lead>
 
-    <date>2014-04-28</date>
-    <version><release>0.2.2</release><api>0.2.0</api></version>
-    <stability><release>alpha</release><api>alpha</api></stability>
+    <date>2015-09-02</date>
+    <version><release>0.3.0</release><api>0.3.0</api></version>
+    <stability><release>beta</release><api>beta</api></stability>
 	<license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
 	<notes>
-	 * Add missing unsubscribe method
+      * Add missing onPublish callback
+      * Improve error handling
+      * Better PHPT tests
+      * add exitLoop() method to break out of the event loop without disconnecting
+      * Move to beta stability
     </notes>
 
     <contents>
@@ -32,6 +36,61 @@
 
             <file role="src" name="config.m4"/>
             <file role="src" name="config.w32"/>
+
+            <dir name="tests">
+             <file role="test" name="makeTestCerts.sh"/>
+             <file role="test" name="mosquitto.conf"/>
+             <file role="test" name="psk.db"/>
+             <file role="test" name="setup.php"/>
+
+             <dir name="Client">
+              <file role="test" name="__construct.phpt"/>
+              <file role="test" name="clearWill.phpt"/>
+              <file role="test" name="connect.phpt"/>
+              <file role="test" name="disconnect.phpt"/>
+              <file role="test" name="exitLoop.phpt"/>
+              <file role="test" name="getSocket.phpt"/>
+              <file role="test" name="loop.phpt"/>
+              <file role="test" name="loopForever.phpt"/>
+              <file role="test" name="onConnect.phpt"/>
+              <file role="test" name="onDisconnect.phpt"/>
+              <file role="test" name="onLog.phpt"/>
+              <file role="test" name="onMessage.phpt"/>
+              <file role="test" name="onSubscribe.phpt"/>
+              <file role="test" name="onUnsubscribe.phpt"/>
+              <file role="test" name="publish.phpt"/>
+              <file role="test" name="setCredentials.phpt"/>
+              <file role="test" name="setMaxInFlightMessages.phpt"/>
+              <file role="test" name="setMessageRetry.phpt"/>
+              <file role="test" name="setReconnectDelay.phpt"/>
+              <file role="test" name="setTlsCertificates.diff"/>
+              <file role="test" name="setTlsCertificates.exp"/>
+              <file role="test" name="setTlsCertificates.log"/>
+              <file role="test" name="setTlsCertificates.out"/>
+              <file role="test" name="setTlsCertificates.php"/>
+              <file role="test" name="setTlsCertificates.phpt"/>
+              <file role="test" name="setTlsCertificates.sh"/>
+              <file role="test" name="setTlsInsecure.phpt"/>
+              <file role="test" name="setTlsOptions.phpt"/>
+              <file role="test" name="setTlsPSK.diff"/>
+              <file role="test" name="setTlsPSK.exp"/>
+              <file role="test" name="setTlsPSK.log"/>
+              <file role="test" name="setTlsPSK.out"/>
+              <file role="test" name="setTlsPSK.php"/>
+              <file role="test" name="setTlsPSK.phpt"/>
+              <file role="test" name="setTlsPSK.sh"/>
+              <file role="test" name="setWill.phpt"/>
+              <file role="test" name="subscribe.phpt"/>
+              <file role="test" name="unsubscribe.phpt"/>
+             </dir>
+
+             <dir name="Message">
+              <file role="test" name="__construct.phpt"/>
+              <file role="test" name="test.php"/>
+              <file role="test" name="tokeniseTopic.phpt"/>
+              <file role="test" name="topicMatchesSub.phpt"/>
+             </dir>
+            </dir>
         </dir>
     </contents>
 

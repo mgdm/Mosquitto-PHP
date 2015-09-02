@@ -9,4 +9,4 @@ cd tests
 mosquitto -c mosquitto.conf -d
 cd ..
 
-REPORT_EXIT_STATUS=1 TEST_PHP_ARGS="-q --show-diff" make test
+USE_ZEND_ALLOC=1 REPORT_EXIT_STATUS=1 TEST_PHP_ARGS="-q --show-diff" make test

@@ -117,7 +117,11 @@ PHP_METHOD(Mosquitto_Client, __construct)
 	if (!object->client) {
 		char *message = php_mosquitto_strerror_wrapper(errno);
 		zend_throw_exception(mosquitto_ce_exception, message, 1 TSRMLS_CC);
-		efree(message);
+#ifndef STRERROR_R_CHAR_P
+		if (message != NULL) {
+			efree(message);
+		}
+#endif
 	}
 }
 /* }}} */
@@ -835,10 +839,11 @@ static int strerror_r(int errnum, char *buf, size_t buf_len)
 
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 {
-	char *buf = ecalloc(256, sizeof(char));
+	char *buf;
 #ifdef STRERROR_R_CHAR_P
 	return strerror_r(err, buf, 256);
 #else
+	buf = ecalloc(256, sizeof(char));
 	if (!strerror_r(err, buf, 256)) {
 		return buf;
 	}

@@ -7,11 +7,13 @@ This is an extension to allow using the [Mosquitto MQTT library](http://mosquitt
 ## Requirements
 
 * PHP 5.3+
-* libmosquitto 1.2.x
+* libmosquitto 1.2.x or later
 * Linux or Mac OS X. I do not have a Windows machine handy, though patches or
   pull requests are of course very welcome!
 
 ## Installation
+
+If you've used a pre-built package to install Mosquitto, you need to make sure you have the development headers installed. On Red Hat-derived systems, this is probably called `libmosquitto-devel`, and on Debian-based systems it will be `libmosquitto-dev`.
 
 You may obtain this package using [PECL](http://pecl.php.net):
 

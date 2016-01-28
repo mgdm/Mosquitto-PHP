@@ -35,7 +35,29 @@ Then add `extension=mosquitto.so` to your `php.ini`.
 The `--with-mosquitto` argument is optional, and only required if your
 libmosquitto install cannot be found.
 
-## Documentation
+## General operation
+
+The underlying library is based on callbacks and asynchronous operation. As such, you have to call the `loop()` method of the `Client` frequently to permit the library to handle the messages in its queues. Also, you should use the callback functions to ensure that you only attempt to publish after the client has connected, etc. For example, here is how you would correctly publish a QoS=2 message:
+
+```php
+<?php
+
+$c = new Mosquitto\Client;
+$c->onConnect(function() use ($c) {
+    $c->publish('mgdm/test', 'Hello', 2);
+});
+
+$c->connect('test.mosquitto.org');
+
+for ($i = 0; $i < 100; $i++) {
+    // Loop around to permit the library to do its work
+    $c->loop(1);
+}
+
+echo "Finished\n";
+```
+
+## API Documentation
 
 The classes in this extension are namespaced.
 

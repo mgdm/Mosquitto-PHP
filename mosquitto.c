@@ -869,7 +869,7 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 	}
 
 	if (client->socket_zval != NULL) {
-		zval_ptr_dtor(client->socket_zval);
+		zval_ptr_dtor(&(client->socket_zval));
 	}
 
 	PHP_MOSQUITTO_FREE_CALLBACK(connect);

@@ -103,12 +103,12 @@ try {
 ?>
 --EXPECTF--
 Mosquitto\Client::connect() expects at least 1 parameter, 0 given
-Unknown error.
-Unknown error.
+%s error.
+%s error.
 Invalid function arguments provided.
 Mosquitto\Client::connect() expects parameter 2 to be long, object given
 Mosquitto\Client::connect() expects parameter 3 to be long, object given
-Unknown error.
+%s error.
 object(Mosquitto\Client)#%d (%d) {
 }
 object(Mosquitto\Client)#%d (%d) {

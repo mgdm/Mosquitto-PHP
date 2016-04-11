@@ -29,7 +29,7 @@ $client->loopForever();
 
 ?>
 --EXPECTF--
-Caught error 4096 (Argument 1 passed to Mosquitto\Client::onSubscribe() must be callable, string given) in /Users/michael/Code/Mosquitto-PHP/tests/Client/onSubscribe.php on line 6
+Caught error 4096 (Argument 1 passed to Mosquitto\Client::onSubscribe() must be callable, string given) in %s on line 6
 Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::onSubscribe() expects parameter 1 to be a valid callback, function 'foo' not found or invalid function name
 array(3) {
   [0]=>

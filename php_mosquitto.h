@@ -53,6 +53,8 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info log_callback;
 	zend_fcall_info_cache log_callback_cache;
 
+    zval *socket_zval;
+
     int looping;
 
 #ifdef ZTS

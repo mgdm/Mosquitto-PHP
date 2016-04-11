@@ -611,6 +611,13 @@ PHP_METHOD(Mosquitto_Client, getSocket)
 
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
 
+	if (object->socket_zval != NULL) {
+		zval_dtor(return_value);
+		*return_value = *object->socket_zval;
+		zval_copy_ctor(return_value);
+		return;
+	}
+
 	socket = mosquitto_socket(object->client);
 	if (socket < 0) {
 		zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Unable to create socket resource");
@@ -625,6 +632,8 @@ PHP_METHOD(Mosquitto_Client, getSocket)
 	php_sock->zstream = NULL;
 
 	ZEND_REGISTER_RESOURCE(return_value, php_sock, php_sockets_le_socket());
+	object->socket_zval = return_value;
+	Z_ADDREF_P(object->socket_zval);
 }
 /* }}} */
 
@@ -859,6 +868,10 @@ static void mosquitto_client_object_destroy(void *object TSRMLS_DC)
 		efree(MQTTG(client_key));
 	}
 
+	if (client->socket_zval != NULL) {
+		zval_ptr_dtor(&(client->socket_zval));
+	}
+
 	PHP_MOSQUITTO_FREE_CALLBACK(connect);
 	PHP_MOSQUITTO_FREE_CALLBACK(subscribe);
 	PHP_MOSQUITTO_FREE_CALLBACK(unsubscribe);
@@ -885,6 +898,7 @@ static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS
 	client = ecalloc(1, sizeof(mosquitto_client_object));
 	client->std.ce = ce;
 	client->client = NULL;
+	client->socket_zval = NULL;
 
 #ifdef ZTS
 	client->TSRMLS_C = TSRMLS_C;

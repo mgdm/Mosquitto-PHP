@@ -37,7 +37,6 @@ extern zend_module_entry mosquitto_module_entry;
 #include <mosquitto.h>
 
 typedef struct _mosquitto_client_object {
-	zend_object std;
 	struct mosquitto *client;
 
 	zend_fcall_info connect_callback;
@@ -56,20 +55,14 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info_cache log_callback_cache;
 
     int looping;
-
-#ifdef ZTS
-	TSRMLS_D;
-#endif
+	zend_object std;
 } mosquitto_client_object;
 
 typedef struct _mosquitto_message_object {
-	zend_object std;
 	struct mosquitto_message message;
 	zend_bool owned_topic;
 	zend_bool owned_payload;
-#ifdef ZTS
-	TSRMLS_D;
-#endif
+	zend_object std;
 } mosquitto_message_object;
 
 typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC);
@@ -92,11 +85,11 @@ typedef struct _php_mosquitto_prop_handler {
 
 #define PHP_MOSQUITTO_FREE_CALLBACK(CALLBACK) \
     if (ZEND_FCI_INITIALIZED(client->CALLBACK ## _callback)) { \
-        zval_ptr_dtor(&client->CALLBACK ## _callback.function_name); \
+        zval_ptr_dtor(client->CALLBACK ## _callback.function_name); \
     } \
  \
-	if (client->CALLBACK ## _callback.object_ptr != NULL) { \
-		zval_ptr_dtor(&client->CALLBACK ## _callback.object_ptr); \
+	if (client->CALLBACK ## _callback.object != NULL) { \
+		zval_ptr_dtor(&client->CALLBACK ## _callback.object); \
 	}
 
 
@@ -116,7 +109,6 @@ typedef struct _php_mosquitto_prop_handler {
 #define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(name) \
 	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC) \
 	{ \
-		MAKE_STD_ZVAL(*retval); \
 		ZVAL_LONG(*retval, mosquitto_object->message.name); \
 		return SUCCESS; \
 	}
@@ -149,6 +141,9 @@ ZEND_END_MODULE_GLOBALS(mosquitto)
 
 #ifdef ZTS
 # define MQTTG(v) TSRMG(mosquitto_globals_id, zend_mosquitto_globals *, v)
+#ifdef COMPILE_DL_MOSQUITTO
+ZEND_TSRMLS_CACHE_EXTERN();
+#endif
 #else
 # define MQTTG(v) (mosquitto_globals.v)
 #endif
@@ -171,6 +166,7 @@ PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq,
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err);
 void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC);
 void php_mosquitto_exit_loop(mosquitto_client_object *object);
+mosquitto_message_object *php_mosquitto_message_fetch_object(zend_object *obj);
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MINIT_FUNCTION(mosquitto_message);

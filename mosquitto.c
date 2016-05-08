@@ -101,19 +101,18 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(Mosquitto_Client, __construct)
 {
 	mosquitto_client_object *object;
-	char *id = NULL;
-	int id_len = 0;
+	zend_string *id = NULL;
 	zend_bool clean_session = 1;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|s!b", &id, &id_len, &clean_session) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|S!b", &id, &clean_session) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = php_mosquitto_client_fetch_object(Z_OBJ_P(getThis()));
-	object->client = mosquitto_new(id, clean_session, object);
+	object->client = mosquitto_new(id == NULL ? NULL : id->val, clean_session, object);
 
 	if (!object->client) {
 		char *message = php_mosquitto_strerror_wrapper(errno);

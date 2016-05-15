@@ -37,5 +37,5 @@ object(Mosquitto\Client)#%d (0) {
 }
 object(Mosquitto\Client)#%d (0) {
 }
-string(80) "Mosquitto\Client::setMessageRetry() expects parameter 1 to be long, string given"
-string(80) "Mosquitto\Client::setMessageRetry() expects parameter 1 to be long, object given"
+string(83) "Mosquitto\Client::setMessageRetry() expects parameter 1 to be integer, string given"
+string(83) "Mosquitto\Client::setMessageRetry() expects parameter 1 to be integer, object given"

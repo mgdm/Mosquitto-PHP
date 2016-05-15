@@ -37,5 +37,5 @@ object(Mosquitto\Client)#%d (0) {
 }
 object(Mosquitto\Client)#%d (0) {
 }
-string(82) "Mosquitto\Client::setReconnectDelay() expects parameter 1 to be long, string given"
-string(82) "Mosquitto\Client::setReconnectDelay() expects parameter 1 to be long, object given"
+string(85) "Mosquitto\Client::setReconnectDelay() expects parameter 1 to be integer, string given"
+string(85) "Mosquitto\Client::setReconnectDelay() expects parameter 1 to be integer, object given"

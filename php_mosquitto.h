@@ -54,7 +54,7 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info log_callback;
 	zend_fcall_info_cache log_callback_cache;
 
-    int looping;
+	int looping;
 	zend_object std;
 } mosquitto_client_object;
 
@@ -65,8 +65,8 @@ typedef struct _mosquitto_message_object {
 	zend_object std;
 } mosquitto_message_object;
 
-typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC);
-typedef int (*php_mosquitto_write_t)(mosquitto_message_object *mosquitto_object, zval *newval TSRMLS_DC);
+typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval *retval);
+typedef int (*php_mosquitto_write_t)(mosquitto_message_object *mosquitto_object, zval *newval);
 
 typedef struct _php_mosquitto_prop_handler {
 	const char *name;
@@ -85,11 +85,11 @@ typedef struct _php_mosquitto_prop_handler {
 
 #define PHP_MOSQUITTO_FREE_CALLBACK(CALLBACK) \
     if (ZEND_FCI_INITIALIZED(client->CALLBACK ## _callback)) { \
-        zval_ptr_dtor(client->CALLBACK ## _callback.function_name); \
+        zval_dtor(&client->CALLBACK ## _callback.function_name); \
     } \
- \
+\
 	if (client->CALLBACK ## _callback.object != NULL) { \
-		zval_ptr_dtor(&client->CALLBACK ## _callback.object); \
+		zend_object_std_dtor(client->CALLBACK ## _callback.object); \
 	}
 
 
@@ -107,9 +107,9 @@ typedef struct _php_mosquitto_prop_handler {
 }
 
 #define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(name) \
-	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC) \
+	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval *retval TSRMLS_DC) \
 	{ \
-		ZVAL_LONG(*retval, mosquitto_object->message.name); \
+		ZVAL_LONG(retval, mosquitto_object->message.name); \
 		return SUCCESS; \
 	}
 

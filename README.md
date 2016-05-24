@@ -1,6 +1,6 @@
 # Mosquitto-PHP
 
-This is an extension to allow using the [Mosquitto MQTT library](http://mosquitto.org) with PHP. See the examples/ directory for usage.
+This is an extension to allow using the [Eclipse Mosquitto™ MQTT client library](http://mosquitto.org) with PHP. See the `examples/` directory for usage.
 
 [![Build Status](https://travis-ci.org/mgdm/Mosquitto-PHP.svg?branch=master)](https://travis-ci.org/mgdm/Mosquitto-PHP)
 

@@ -9,11 +9,16 @@ include(dirname(__DIR__) . '/setup.php');
 
 /* Not connected */
 $client = new Client();
-var_dump($client->getSocket());
+
+try {
+    var_dump($client->getSocket());
+} catch (Mosquitto\Exception $e) {
+    var_dump($e->getMessage());
+}
 
 $client->connect(TEST_MQTT_HOST);
-var_dump($client->getSocket() > 0);
+var_dump($client->getSocket());
 ?>
 --EXPECTF--
-int(-1)
-bool(true)
+string(32) "Unable to create socket resource"
+resource(%d) of type (Socket)

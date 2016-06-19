@@ -8,6 +8,7 @@
 #include "zend_exceptions.h"
 #include "zend_API.h"
 #include "ext/standard/php_filestat.h"
+#include "ext/sockets/php_sockets.h"
 #include "ext/standard/info.h"
 #include "php_mosquitto.h"
 
@@ -636,6 +637,8 @@ PHP_METHOD(Mosquitto_Client, onPublish)
 PHP_METHOD(Mosquitto_Client, getSocket)
 {
 	mosquitto_client_object *object;
+	php_socket *php_sock;
+	PHP_SOCKET socket;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters_none()  == FAILURE) {
@@ -645,7 +648,21 @@ PHP_METHOD(Mosquitto_Client, getSocket)
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis() TSRMLS_CC);
-	RETURN_LONG(mosquitto_socket(object->client));
+
+	socket = mosquitto_socket(object->client);
+	if (socket < 0) {
+		zend_throw_exception_ex(mosquitto_ce_exception, 0 TSRMLS_CC, "Unable to create socket resource");
+		return;
+	}
+
+	php_sock = emalloc(sizeof *php_sock);
+	php_sock->bsd_socket = socket;
+	php_sock->type = AF_INET;
+	php_sock->error = 0;
+	php_sock->blocking = 1;
+	php_sock->zstream = NULL;
+
+	ZEND_REGISTER_RESOURCE(return_value, php_sock, php_sockets_le_socket());
 }
 /* }}} */
 

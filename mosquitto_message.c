@@ -113,7 +113,11 @@ static int php_mosquitto_message_read_topic(mosquitto_message_object *mosquitto_
 
 static int php_mosquitto_message_read_payload(mosquitto_message_object *mosquitto_object, zval *retval)
 {
-	ZVAL_STRINGL(retval, mosquitto_object->message.payload, mosquitto_object->message.payloadlen);
+	if (mosquitto_object->message.payload != NULL) {
+		ZVAL_STRINGL(retval, mosquitto_object->message.payload, mosquitto_object->message.payloadlen);
+	} else {
+		ZVAL_NULL(retval);
+	}
 	return SUCCESS;
 }
 

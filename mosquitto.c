@@ -723,22 +723,25 @@ PHP_METHOD(Mosquitto_Client, publish)
 PHP_METHOD(Mosquitto_Client, subscribe)
 {
 	mosquitto_client_object *object;
-	char *sub;
-	int sub_len, retval, mid;
-	long qos;
+	zend_string *sub = NULL;
+	int retval, mid;
+	long qos = 0;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "sl",
-				&sub, &sub_len, &qos) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|l", &sub, &qos) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis());
-	retval = mosquitto_subscribe(object->client, &mid, sub, qos);
+	retval = mosquitto_subscribe(object->client, &mid, sub->val, qos);
 
 	php_mosquitto_handle_errno(retval, errno);
+
+	if (sub != NULL) {
+		zend_string_release(sub);
+	}
 
 	RETURN_LONG(mid);
 }
@@ -748,21 +751,24 @@ PHP_METHOD(Mosquitto_Client, subscribe)
 PHP_METHOD(Mosquitto_Client, unsubscribe)
 {
 	mosquitto_client_object *object;
-	char *sub;
-	int sub_len, retval, mid;
+	zend_string *sub = NULL;
+	int retval, mid;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s",
-				&sub, &sub_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &sub) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	object = (mosquitto_client_object *) mosquitto_client_object_get(getThis());
-	retval = mosquitto_unsubscribe(object->client, &mid, sub);
+	retval = mosquitto_unsubscribe(object->client, &mid, sub->val);
 
 	php_mosquitto_handle_errno(retval, errno);
+
+	if (sub != NULL) {
+		zend_string_release(sub);
+	}
 
 	RETURN_LONG(mid);
 }
@@ -1121,7 +1127,7 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq, void *client_obj, int mid)
 {
 	mosquitto_client_object *object = (mosquitto_client_object *) client_obj;
-	zval *retval_ptr = NULL;
+	zval retval;
 	zval params[1];
 #ifdef ZTS
 	TSRMLS_D = object->TSRMLS_C;
@@ -1135,15 +1141,12 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 
 	object->unsubscribe_callback.params = params;
 	object->unsubscribe_callback.param_count = 1;
+	object->unsubscribe_callback.retval = &retval;
 
 	if (zend_call_function(&object->unsubscribe_callback, &object->unsubscribe_callback_cache) == FAILURE) {
 		if (!EG(exception)) {
 			zend_throw_exception_ex(mosquitto_ce_exception, 0, "Failed to invoke unsubscribe callback %s()", Z_STRVAL(object->unsubscribe_callback.function_name));
 		}
-	}
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(retval_ptr);
 	}
 }
 

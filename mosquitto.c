@@ -21,6 +21,11 @@ static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj);
 static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata);
 static mosquitto_client_object *php_mosquitto_client_fetch_object(zend_object *obj);
 
+#define PHP_MOSQUITTO_RELEASE_STRING(name) \
+	if (name != NULL) { \
+		zend_string_release(name); \
+	}
+
 /* {{{ Arginfo */
 
 ZEND_BEGIN_ARG_INFO(Mosquitto_Client___construct_args, ZEND_SEND_BY_VAL)
@@ -135,25 +140,25 @@ PHP_METHOD(Mosquitto_Client, __construct)
 PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 {
 	mosquitto_client_object *object;
-	char *ca_path = NULL, *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
-	int ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len, retval = 0;
+	zend_string *ca_path = NULL, *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
+	int retval = 0;
 	zval stat;
 	zend_bool is_dir = 0;
 	int (*pw_callback)(char *, int, int, void *) = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s!|s!s!s!",
-				&ca_path, &ca_path_len,
-				&cert_path, &cert_path_len,
-				&key_path, &key_path_len,
-				&key_pw, &key_pw_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "S!|S!S!S!",
+				&ca_path,
+				&cert_path,
+				&key_path,
+				&key_pw) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
 	}
 
-	if ((php_check_open_basedir(ca_path) < 0) ||
-		(php_check_open_basedir(cert_path) < 0) ||
-		(php_check_open_basedir(key_path) < 0))
+	if ((php_check_open_basedir(ca_path->val) < 0) ||
+		(php_check_open_basedir(cert_path->val) < 0) ||
+		(php_check_open_basedir(key_path->val) < 0))
 	{
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
@@ -163,20 +168,25 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 
 	object = (mosquitto_client_object *) php_mosquitto_client_fetch_object(Z_OBJ_P(getThis()));
 
-	php_stat(ca_path, ca_path_len, FS_IS_DIR, &stat);
+	php_stat(ca_path->val, ca_path->len, FS_IS_DIR, &stat);
 	is_dir = Z_TYPE(stat) == IS_TRUE ? 1 : 0;
 
 	if (key_pw != NULL) {
 		pw_callback = php_mosquitto_pw_callback;
-		MQTTG(client_key) = estrdup(key_pw);
-		MQTTG(client_key_len) = key_pw_len;
+		MQTTG(client_key) = key_pw->val;
+		MQTTG(client_key_len) = key_pw->len;
 	}
 
 	if (is_dir) {
-		retval = mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, pw_callback);
+		retval = mosquitto_tls_set(object->client, NULL, ca_path->val, cert_path->val, key_path->val, pw_callback);
 	} else {
-		retval = mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, pw_callback);
+		retval = mosquitto_tls_set(object->client, ca_path->val, NULL, cert_path->val, key_path->val, pw_callback);
 	}
+
+	PHP_MOSQUITTO_RELEASE_STRING(ca_path);
+	PHP_MOSQUITTO_RELEASE_STRING(cert_path);
+	PHP_MOSQUITTO_RELEASE_STRING(key_path);
+	PHP_MOSQUITTO_RELEASE_STRING(key_pw);
 
 	php_mosquitto_handle_errno(retval, errno);
 	RETURN_LONG(retval);

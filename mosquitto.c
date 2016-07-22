@@ -123,14 +123,11 @@ PHP_METHOD(Mosquitto_Client, __construct)
 		zend_string_release(id);
 	}
 
-	if (!object->client) {
-		char *message = php_mosquitto_strerror_wrapper(errno);
-		zend_throw_exception(mosquitto_ce_exception, message, 1);
-#ifndef STRERROR_R_CHAR_P
-		if (message != NULL) {
-			efree(message);
-		}
-#endif
+//	if (!object->client) {
+	if (errno) {
+		const char *message = mosquitto_strerror(errno);
+		zend_throw_exception(NULL, "Ooops", 1);
+		return;
 	}
 
 }
@@ -273,7 +270,7 @@ PHP_METHOD(Mosquitto_Client, setCredentials)
 {
 	mosquitto_client_object *object;
 	char *username = NULL, *password = NULL;
-	int username_len, password_len, retval;
+	size_t username_len, password_len, retval;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "ss", &username, &username_len, &password, &password_len) == FAILURE) {
@@ -851,28 +848,6 @@ PHP_METHOD(Mosquitto_Client, exitLoop)
 
 /* Internal functions */
 
-#if defined(PHP_WIN32)
-static int strerror_r(int errnum, char *buf, size_t buf_len)
-{
-	return strerror_s(buf, buf_len, errnum);
-}
-#endif
-
-PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
-{
-	char *buf;
-#ifdef STRERROR_R_CHAR_P
-	return strerror_r(err, buf, 256);
-#else
-	buf = ecalloc(256, sizeof(char));
-	if (!strerror_r(err, buf, 256)) {
-		return buf;
-	}
-	efree(buf);
-	return NULL;
-#endif
-}
-
 PHP_MOSQUITTO_API void php_mosquitto_exit_loop(mosquitto_client_object *object)
 {
 	object->looping = 0;
@@ -943,7 +918,7 @@ void php_mosquitto_handle_errno(int retval, int err) {
 			return;
 
 		case MOSQ_ERR_ERRNO:
-			message = php_mosquitto_strerror_wrapper(errno);
+			message = mosquitto_strerror(errno);
 			break;
 
 		default:
@@ -1249,8 +1224,7 @@ PHP_MINIT_FUNCTION(mosquitto)
 	mosquitto_ce_client->create_object = mosquitto_client_object_new;
 
 	INIT_NS_CLASS_ENTRY(exception_ce, "Mosquitto", "Exception", NULL);
-	mosquitto_ce_exception = zend_register_internal_class_ex(&exception_ce,
-			zend_exception_get_default());
+	mosquitto_ce_exception = zend_register_internal_class_ex(&exception_ce, zend_ce_exception);
 
 	#define REGISTER_MOSQUITTO_LONG_CONST(const_name, value) \
 	zend_declare_class_constant_long(mosquitto_ce_client, const_name, sizeof(const_name)-1, (long)value); \

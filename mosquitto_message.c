@@ -199,7 +199,7 @@ const php_mosquitto_prop_handler php_mosquitto_message_property_entries[] = {
 	PHP_MOSQUITTO_MESSAGE_PROPERTY_ENTRY_RECORD(payload),
 	PHP_MOSQUITTO_MESSAGE_PROPERTY_ENTRY_RECORD(qos),
 	PHP_MOSQUITTO_MESSAGE_PROPERTY_ENTRY_RECORD(retain),
-	{NULL, 0, NULL, NULL}
+	{NULL, NULL, NULL}
 };
 
 zval *php_mosquitto_message_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
@@ -213,10 +213,8 @@ zval *php_mosquitto_message_read_property(zval *object, zval *member, int type, 
 	message_object = (mosquitto_message_object *) php_mosquitto_message_fetch_object(Z_OBJ_P(object));
 
 	if (Z_TYPE_P(member) != IS_STRING) {
-		tmp_member = *member;
-		zval_copy_ctor(&tmp_member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
+        ZVAL_STR(&tmp_member, zval_get_string(member));
+        member = &tmp_member;
 	}
 
     hnd = zend_hash_find_ptr(&php_mosquitto_message_properties, Z_STR_P(member));
@@ -227,15 +225,11 @@ zval *php_mosquitto_message_read_property(zval *object, zval *member, int type, 
 			/* ensure we're creating a temporary variable */
 			Z_TRY_ADDREF_P(rv);
 		} else {
-			ZVAL_UNDEF_P(rv);
+			ZVAL_UNDEF(rv);
 		}
 	} else {
 		zend_object_handlers * std_hnd = zend_get_std_object_handlers();
 		rv = std_hnd->read_property(object, member, type, NULL, NULL);
-	}
-
-	if (member == &tmp_member) {
-		zval_dtor(member);
 	}
 
 	return(rv);
@@ -291,11 +285,7 @@ static int php_mosquitto_message_has_property(zval *object, zval *member, int ha
 			default: {
 				zval *value = php_mosquitto_message_read_property(object, member, 0, NULL, NULL);
 				if (!Z_ISUNDEF_P(value)) {
-					convert_to_boolean(value);
-					ret = value ? 1 : 0;
-					/* refcount is 0 */
-//					Z_ADDREF_P(value);
-//					zval_ptr_dtor(&value);
+					ret = zval_get_long(value) ? 1 : 0;
 				}
 				break;
 			}
@@ -310,19 +300,18 @@ static int php_mosquitto_message_has_property(zval *object, zval *member, int ha
 static HashTable *php_mosquitto_message_get_properties(zval *object)
 {
 	mosquitto_message_object *obj;
-	php_mosquitto_prop_handler *hnd;
+	php_mosquitto_prop_handler *entry;
 	HashTable *props;
 	zval val;
-	zend_string *key;
-	uint key_len;
+	zend_string *key = NULL;
 	HashPosition pos;
 	ulong num_key;
 
 	obj = php_mosquitto_message_fetch_object(Z_OBJ_P(object));
 	props = zend_std_get_properties(object);
 
-	ZEND_HASH_FOREACH_STR_KEY_PTR(&php_mosquitto_message_properties, key, hnd) {
-		if (!hnd->read_func || hnd->read_func(obj, &val) != SUCCESS) {
+	ZEND_HASH_FOREACH_STR_KEY_PTR(&php_mosquitto_message_properties, key, entry) {
+		if (!entry->read_func || entry->read_func(obj, &val) != SUCCESS) {
 			ZVAL_UNDEF(&val);
 		}
 		zend_hash_update(props, key, &val);
@@ -333,15 +322,22 @@ static HashTable *php_mosquitto_message_get_properties(zval *object)
 }
 
 
-void php_mosquitto_message_add_property(HashTable *h, const char *name, size_t name_length, php_mosquitto_read_t read_func, php_mosquitto_write_t write_func)
+static void php_mosquitto_message_add_property(HashTable *h, const char *name, php_mosquitto_read_t read_func, php_mosquitto_write_t write_func)
 {
-	php_mosquitto_prop_handler p;
+	php_mosquitto_prop_handler *p = ecalloc(1, sizeof(php_mosquitto_prop_handler));
 
-	p.name = (char*) name;
-	p.name_length = name_length;
-	p.read_func = (read_func) ? read_func : NULL;
-	p.write_func = (write_func) ? write_func : NULL;
-    zend_hash_str_add_ptr(h, name, name_length + 1, &p);
+	p->name = name;
+	p->read_func = (read_func) ? read_func : NULL;
+	p->write_func = (write_func) ? write_func : NULL;
+    zend_hash_str_add_ptr(h, name, strlen(name), p);
+}
+
+static void php_mosquitto_add_properties(HashTable *properties, const php_mosquitto_prop_handler entries[]) {
+    int i = 0;
+    while (entries[i].name != NULL) {
+        php_mosquitto_message_add_property(properties, entries[i].name, (php_mosquitto_read_t) entries[i].read_func, (php_mosquitto_write_t) entries[i].write_func);
+        i++;
+    }
 }
 
 static void mosquitto_message_object_destroy(zend_object *object)
@@ -397,8 +393,8 @@ PHP_MINIT_FUNCTION(mosquitto_message)
 	mosquitto_ce_message = zend_register_internal_class(&message_ce);
 	mosquitto_ce_message->create_object = mosquitto_message_object_new;
 
-	zend_hash_init(&php_mosquitto_message_properties, 0, NULL, NULL, 1);
-	PHP_MOSQUITTO_ADD_PROPERTIES(&php_mosquitto_message_properties, php_mosquitto_message_property_entries);
+	zend_hash_init(&php_mosquitto_message_properties, 8, NULL, NULL, 1);
+	php_mosquitto_add_properties(&php_mosquitto_message_properties, php_mosquitto_message_property_entries);
 
 	return SUCCESS;
 }	

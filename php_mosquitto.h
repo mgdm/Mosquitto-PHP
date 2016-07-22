@@ -70,7 +70,6 @@ typedef int (*php_mosquitto_write_t)(mosquitto_message_object *mosquitto_object,
 
 typedef struct _php_mosquitto_prop_handler {
 	const char *name;
-	size_t name_length;
 	php_mosquitto_read_t read_func;
 	php_mosquitto_write_t write_func;
 } php_mosquitto_prop_handler;
@@ -94,17 +93,7 @@ typedef struct _php_mosquitto_prop_handler {
 
 
 #define PHP_MOSQUITTO_MESSAGE_PROPERTY_ENTRY_RECORD(name) \
-	{ "" #name "",		sizeof("" #name "") - 1,	php_mosquitto_message_read_##name,	php_mosquitto_message_write_##name }
-
-#define PHP_MOSQUITTO_ADD_PROPERTIES(a, b) \
-{ \
-	int i = 0; \
-	while (b[i].name != NULL) { \
-		php_mosquitto_message_add_property((a), (b)[i].name, (b)[i].name_length, \
-							(php_mosquitto_read_t)(b)[i].read_func, (php_mosquitto_write_t)(b)[i].write_func TSRMLS_CC); \
-		i++; \
-	} \
-}
+	{ "" #name "",		php_mosquitto_message_read_##name,	php_mosquitto_message_write_##name }
 
 #define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(name) \
 	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval *retval TSRMLS_DC) \

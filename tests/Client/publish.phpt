@@ -114,7 +114,7 @@ Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::publish() 
 Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::publish() expects parameter 1 to be string, object given
 Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::publish() expects at least 2 parameters, 1 given
 Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::publish() expects at least 2 parameters, 1 given
-Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::publish() expects parameter 3 to be long, object given
+Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::publish() expects parameter 3 to be %s, object given
 Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::publish() expects parameter 4 to be boolean, object given
 Caught Mosquitto\Exception with code 0 and message: The client is not currently connected.
 Caught Mosquitto\Exception with code 0 and message: The client is not currently connected.

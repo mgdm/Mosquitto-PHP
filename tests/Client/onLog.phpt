@@ -13,8 +13,10 @@ function logger() {
 try {
     $client = new Mosquitto\Client;
     $client->onLog('foo');
-} catch (Exception $e) {
+} catch (TypeError $e) {
     printf("Caught %s with code %d and message: %s\n", get_class($e), $e->getCode(), $e->getMessage());
+} catch (Mosquitto\Exception $e) {
+    printf("Caught TypeError with code %d and message: %s\n", get_class($e), $e->getCode(), $e->getMessage());
 }
 
 $client = new Mosquitto\Client;
@@ -26,8 +28,7 @@ $client->loop(50);
 $client->loop(50);
 ?>
 --EXPECTF--
-Caught error 4096 (Argument 1 passed to Mosquitto\Client::onLog() must be callable, string given) in %s on line %d
-Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::onLog() expects parameter 1 to be a valid callback, function 'foo' not found or invalid function name
+%ACaught TypeError with code 0 and message: %s
 object(Mosquitto\Client)#%d (%d) {
 }
 array(2) {

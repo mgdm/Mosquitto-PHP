@@ -9,8 +9,10 @@ include(dirname(__DIR__) . '/setup.php');
 try {
     $client = new Mosquitto\Client;
     $client->onMessage('foo');
-} catch (Exception $e) {
+} catch (TypeError $e) {
     printf("Caught %s with code %d and message: %s\n", get_class($e), $e->getCode(), $e->getMessage());
+} catch (Mosquitto\Exception $e) {
+    printf("Caught TypeError with code %d and message: %s\n", get_class($e), $e->getCode(), $e->getMessage());
 }
 unset($client);
 
@@ -28,15 +30,14 @@ $client2 = new Mosquitto\Client;
 $client2->connect(TEST_MQTT_HOST);
 $client2->publish('test', 'test', 1);
 
-for ($i = 0; $i < 3; $i++) {
+for ($i = 0; $i < 30; $i++) {
     $client->loop(50);
     $client2->loop(50);
 }
 
 ?>
 --EXPECTF--
-Caught error 4096 (Argument 1 passed to Mosquitto\Client::onMessage() must be callable, string given) in %s on line %d
-Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::onMessage() expects parameter 1 to be a valid callback, function 'foo' not found or invalid function name
+%ACaught TypeError with code 0 and message: %s
 object(Mosquitto\Client)#%d (%d) {
 }
 object(Mosquitto\Message)#%d (%d) {

@@ -4,9 +4,9 @@ This is an extension to allow using the [Eclipse Mosquitto™ MQTT client librar
 
 [![Build Status](https://travis-ci.org/mgdm/Mosquitto-PHP.svg?branch=master)](https://travis-ci.org/mgdm/Mosquitto-PHP)
 
-## Note
+## PHP 7 support
 
-The `php7` branch is a work in progress and is *not ready for production use*. It will in all probability just segfault. This notice will be removed when it is ready to be tested.
+Thanks to [Sara Golemon](https://twitter.com/SaraMG) this extension now supports PHP 7. I would be grateful if anyone using PHP 7 could test it and let me know how it works out.
 
 ## Requirements
 

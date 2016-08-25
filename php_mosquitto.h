@@ -36,8 +36,14 @@ extern zend_module_entry mosquitto_module_entry;
 
 #include <mosquitto.h>
 
+#if defined(ZEND_ENGINE_2) && defined(ZTS)
+# define MOSQUITTO_NEED_TSRMLS
+#endif
+
 typedef struct _mosquitto_client_object {
+#ifndef ZEND_ENGINE_3
 	zend_object std;
+#endif
 	struct mosquitto *client;
 
 	zend_fcall_info connect_callback;
@@ -55,24 +61,60 @@ typedef struct _mosquitto_client_object {
 	zend_fcall_info log_callback;
 	zend_fcall_info_cache log_callback_cache;
 
-    int looping;
+	int looping;
 
-#ifdef ZTS
+#ifdef MOSQUITTO_NEED_TSRMLS
 	TSRMLS_D;
+#endif
+#ifdef ZEND_ENGINE_3
+	zend_object std; /* Must be last */
 #endif
 } mosquitto_client_object;
 
 typedef struct _mosquitto_message_object {
+#ifndef ZEND_ENGINE_3
 	zend_object std;
+#endif
 	struct mosquitto_message message;
 	zend_bool owned_topic;
 	zend_bool owned_payload;
-#ifdef ZTS
+#ifdef MOSQUITTO_NEED_TSRMLS
 	TSRMLS_D;
+#endif
+#ifdef ZEND_ENGINE_3
+	zend_object std; /* Must be last */
 #endif
 } mosquitto_message_object;
 
+static inline
+mosquitto_client_object *mosquitto_client_object_from_zend_object(zend_object* obj) {
+	return (mosquitto_client_object*)(
+		((char*)obj) - XtOffsetOf(mosquitto_client_object, std)
+	);
+}
+
+static inline
+zend_object *mosquitto_client_object_to_zend_object(mosquitto_client_object* client) {
+	return &(client->std);
+}
+
+static inline
+mosquitto_message_object *mosquitto_message_object_from_zend_object(zend_object* obj) {
+	return (mosquitto_message_object*)(
+		((char*)obj) - XtOffsetOf(mosquitto_message_object, std)
+	);
+}
+
+static inline
+zend_object *mosquitto_message_object_to_zend_object(mosquitto_message_object* msg) {
+	return &(msg->std);
+}
+
+#ifdef ZEND_ENGINE_3
+typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval *retval);
+#else
 typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC);
+#endif
 typedef int (*php_mosquitto_write_t)(mosquitto_message_object *mosquitto_object, zval *newval TSRMLS_DC);
 
 typedef struct _php_mosquitto_prop_handler {
@@ -89,16 +131,31 @@ typedef struct _php_mosquitto_prop_handler {
 #define PHP_MOSQUITTO_RESTORE_ERRORS() \
 	zend_restore_error_handling(&MQTTG(mosquitto_original_error_handling) TSRMLS_CC)
 
-
-#define PHP_MOSQUITTO_FREE_CALLBACK(CALLBACK) \
+#ifdef ZEND_ENGINE_3
+# define PHP_MOSQUITTO_FREE_CALLBACK(client, CALLBACK) \
+    if (ZEND_FCI_INITIALIZED(client->CALLBACK ## _callback)) { \
+        zval_ptr_dtor(&client->CALLBACK ## _callback.function_name); \
+    } \
+ \
+    if (client->CALLBACK ## _callback.object != NULL) { \
+		zval tmp_; \
+		ZVAL_OBJ(&tmp_, client->CALLBACK ## _callback.object); \
+		zval_ptr_dtor(&tmp_); \
+    } \
+	client->CALLBACK ## _callback = empty_fcall_info; \
+	client->CALLBACK ## _callback_cache = empty_fcall_info_cache;
+#else
+# define PHP_MOSQUITTO_FREE_CALLBACK(client, CALLBACK) \
     if (ZEND_FCI_INITIALIZED(client->CALLBACK ## _callback)) { \
         zval_ptr_dtor(&client->CALLBACK ## _callback.function_name); \
     } \
  \
 	if (client->CALLBACK ## _callback.object_ptr != NULL) { \
 		zval_ptr_dtor(&client->CALLBACK ## _callback.object_ptr); \
-	}
-
+	} \
+	client->CALLBACK ## _callback = empty_fcall_info; \
+	client->CALLBACK ## _callback_cache = empty_fcall_info_cache;
+#endif
 
 #define PHP_MOSQUITTO_MESSAGE_PROPERTY_ENTRY_RECORD(name) \
 	{ "" #name "",		sizeof("" #name "") - 1,	php_mosquitto_message_read_##name,	php_mosquitto_message_write_##name }
@@ -113,13 +170,20 @@ typedef struct _php_mosquitto_prop_handler {
 	} \
 }
 
-#define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(name) \
-	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC) \
-	{ \
+#ifdef ZEND_ENGINE_3
+# define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(name) \
+	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval *retval) { \
+		ZVAL_LONG(retval, mosquitto_object->message.name); \
+		return SUCCESS; \
+	}
+#else
+# define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_READER_FUNCTION(name) \
+	static int php_mosquitto_message_read_##name(mosquitto_message_object *mosquitto_object, zval **retval TSRMLS_DC) { \
 		MAKE_STD_ZVAL(*retval); \
 		ZVAL_LONG(*retval, mosquitto_object->message.name); \
 		return SUCCESS; \
 	}
+#endif
 
 #define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_WRITER_FUNCTION(name) \
 static int php_mosquitto_message_write_##name(mosquitto_message_object *mosquitto_object, zval *newval TSRMLS_DC) \

@@ -9,8 +9,10 @@ include(dirname(__DIR__) . '/setup.php');
 try {
     $client = new Mosquitto\Client;
     $client->onConnect('foo');
-} catch (Exception $e) {
+} catch (TypeError $e) {
     printf("Caught %s with code %d and message: %s\n", get_class($e), $e->getCode(), $e->getMessage());
+} catch (Mosquitto\Exception $e) {
+    printf("Caught TypeError with code %d and message: %s\n", get_class($e), $e->getCode(), $e->getMessage());
 }
 unset($client);
 
@@ -26,8 +28,7 @@ for ($i = 0; $i < 2; $i++) {
 }
 ?>
 --EXPECTF--
-Caught error 4096 (Argument 1 passed to Mosquitto\Client::onConnect() must be callable, string given) in %s on line 6
-Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::onConnect() expects parameter 1 to be a valid callback, function 'foo' not found or invalid function name
+%ACaught TypeError with code 0 and message: %s
 array(2) {
   [0]=>
   int(0)

@@ -2,6 +2,11 @@
 
 define('CERTIFICATE_DIR', __DIR__ . '/certs/');
 
+if (!class_exists("TypeError")) {
+  // Hack for PHP7 throwing type mismatches as TypeErrors rather than Mosquito\Exception
+  class TypeError extends Exception {}
+}
+
 $defaults = array(
     'TEST_MQTT_HOST' => 'localhost',
     'TEST_MQTT_PORT' => 1883,

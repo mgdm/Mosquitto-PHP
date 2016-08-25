@@ -73,7 +73,7 @@ Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::subscribe(
 Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::subscribe() expects exactly 2 parameters, 1 given
 Caught Mosquitto\Exception with code 0 and message: The client is not currently connected.
 Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::subscribe() expects parameter 1 to be string, object given
-Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::subscribe() expects parameter 2 to be long, object given
+Caught Mosquitto\Exception with code 0 and message: Mosquitto\Client::subscribe() expects parameter 2 to be %s, object given
 array(3) {
   [0]=>
   int(%d)

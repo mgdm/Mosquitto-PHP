@@ -77,8 +77,7 @@ object(Mosquitto\Message)#1 (5) {
   bool(false)
 }
 Caught error 4096 (Object of class stdClass could not be converted to string) in %s on line 16
-Caught error 8 (Object of class stdClass to string conversion) in %s on line 16
-object(Mosquitto\Message)#1 (5) {
+%Aobject(Mosquitto\Message)#1 (5) {
   ["mid"]=>
   int(%d)
   ["topic"]=>
@@ -103,8 +102,7 @@ object(Mosquitto\Message)#1 (5) {
   bool(false)
 }
 Caught error 4096 (Object of class stdClass could not be converted to string) in %s on line 22
-Caught error 8 (Object of class stdClass to string conversion) in %s on line 22
-object(Mosquitto\Message)#1 (5) {
+%Aobject(Mosquitto\Message)#1 (5) {
   ["mid"]=>
   int(%d)
   ["topic"]=>

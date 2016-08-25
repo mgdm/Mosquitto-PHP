@@ -106,8 +106,8 @@ Mosquitto\Client::connect() expects at least 1 parameter, 0 given
 %s error.
 %s error.
 Invalid function arguments provided.
-Mosquitto\Client::connect() expects parameter 2 to be long, object given
-Mosquitto\Client::connect() expects parameter 3 to be long, object given
+Mosquitto\Client::connect() expects parameter 2 to be %s, object given
+Mosquitto\Client::connect() expects parameter 3 to be %s, object given
 %s error.
 object(Mosquitto\Client)#%d (%d) {
 }

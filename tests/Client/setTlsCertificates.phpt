@@ -46,31 +46,27 @@ try {
 $client->setTlsCertificates(CERTIFICATE_DIR . 'ca.crt');
 //$client->setTlsCertificates(CERTIFICATE_DIR . 'ca.crt', CERTIFICATE_DIR . 'client.crt', CERTIFICATE_DIR . 'client-enc.key', 'Mosquitto-PHP');
 
-$client->onConnect(function() {
+$client->onConnect(function() use ($client) {
     echo "Connected successfully\n";
+    $client->disconnect();
 });
 
 $client->connect(TEST_MQTT_HOST, TEST_MQTT_TLS_PORT);
-
-for ($i = 0; $i < 5; $i++) {
-    $client->loop();
-}
+$client->loopForever();
 
 $client->disconnect();
 unset($client);
 
 $client2 = new Mosquitto\Client;
-$client2->onConnect(function() {
+$client2->onConnect(function() use ($client2) {
     echo "Connected successfully\n";
+    $client2->disconnect();
 });
 
 $client2->setTlsCertificates(CERTIFICATE_DIR . 'ca.crt', CERTIFICATE_DIR . 'client.crt', CERTIFICATE_DIR . 'client-enc.key', 'Mosquitto-PHP');
 
 $client2->connect(TEST_MQTT_HOST, TEST_MQTT_TLS_CERT_PORT);
-
-for ($i = 0; $i < 5; $i++) {
-    $client2->loop();
-}
+$client2->loopForever();
 
 ?>
 --EXPECTF--

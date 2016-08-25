@@ -39,15 +39,13 @@ var_dump($client);
 $client->setTlsPsk('1234567890abcdef', 'testuser', 'DEFAULT');
 var_dump($client);
 
-$client->onConnect(function() {
+$client->onConnect(function() use ($client) {
     echo "Connected successfully\n";
+    $client->disconnect();
 });
 
 $client->connect(TEST_MQTT_HOST, TEST_MQTT_TLS_PSK_PORT);
-
-for ($i = 0; $i < 5; $i++) {
-    $client->loop();
-}
+$client->loopForever();
 
 ?>
 --EXPECTF--

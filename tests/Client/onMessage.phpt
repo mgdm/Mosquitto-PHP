@@ -31,8 +31,8 @@ $client2->connect(TEST_MQTT_HOST);
 $client2->publish('test', 'test', 1);
 
 for ($i = 0; $i < 30; $i++) {
-    $client->loop(50);
-    $client2->loop(50);
+    $client->loop();
+    $client2->loop();
 }
 
 ?>

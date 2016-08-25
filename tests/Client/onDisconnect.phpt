@@ -42,9 +42,9 @@ $client->onDisconnect(function() use (&$loop) {
 
 $client->connect(TEST_MQTT_HOST);
 
-for ($i = 0; $i < 5; $i++) {
+for ($i = 0; $i < 10; $i++) {
     if (!$loop) break;
-    $client->loop(50);
+    $client->loop();
 }
 
 ?>

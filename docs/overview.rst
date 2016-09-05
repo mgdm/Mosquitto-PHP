@@ -5,7 +5,7 @@ Overview
 Requirements
 ============
 
-* PHP 5.3 or newer
+* PHP 5.3 or newer, including PHP 7+
 * libmosquitto 1.2.x or later
 
 Installation

@@ -7,6 +7,10 @@
 Mosquitto-PHP
 =============
 
+This is an extension to allow using the `Eclipse Mosquitto™ MQTT client library <http://mosquitto.org>`_ with PHP.
+
+See the ``examples`` directory for usage.
+
 Contents
 ========
 

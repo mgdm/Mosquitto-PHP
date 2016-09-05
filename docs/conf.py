@@ -127,7 +127,16 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+#html_theme = 'alabaster'
+
+html_context = {
+    "display_github": True,
+    "github_user": "mgdm",
+    "github_repo": project,
+    "github_version": "master",
+    "conf_py_path": "/docs/",
+    "source_suffix": source_suffix,
+}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

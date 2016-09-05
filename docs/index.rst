@@ -15,6 +15,8 @@ Contents
    
    overview
    client
+   message
+   exception
 
 
 

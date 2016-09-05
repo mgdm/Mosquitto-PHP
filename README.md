@@ -65,9 +65,3 @@ echo "Finished\n";
 
 Full documentation is [available on ReadTheDocs](http://mosquitto-php.readthedocs.io/).
 
-## To do
-
-* Arginfo
-* Logging callbacks
-* TLS support
-* Tests

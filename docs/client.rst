@@ -8,6 +8,34 @@ Mosquitto\\Client
 
     This is the main Mosquitto client.
 
+    .. php:const:: LOG_DEBUG
+
+        Identifies a debug-level log message
+
+    .. php:const:: LOG_INFO
+
+        Identifies an info-level log message
+
+    .. php:const:: LOG_NOTICE
+
+        Identifies a notice-level log message
+
+    .. php:const:: LOG_WARNING
+
+        Identifies a warning-level log message
+
+    .. php:const:: LOG_ERR
+
+        Identifies an error-level log message
+
+    .. php:const:: SSL_VERIFY_NONE
+
+        Used with :php:meth:`~Client::setTlsInsecure`. Do not verify the identity of the server, thus making the connection insecure.
+
+    .. php:const:: SSL_VERIFY_PEER
+
+        Used with :php:meth:`~Client::setTlsInsecure`. Verify the identity of the server.
+
     .. php:method:: __construct([$id = null, $cleanSession = true])
 
         Construct a new Client instance.
@@ -69,7 +97,7 @@ Mosquitto\\Client
 
         Remove a previously-set will. No parameters.
 
-    .. php:method:: setReconnectDelay($reconnectDelay, $exponentialDelay, $exponentialBackoff = false)
+    .. php:method:: setReconnectDelay($reconnectDelay, $exponentialDelay, $exponentialBackoff)
 
         Control the behaviour of the client when it has unexpectedly disconnected in :php:meth:`Client::loopForever`.  The default behaviour if this method is not used is to repeatedly attempt to reconnect with a delay of 1 second until the connection succeeds.
 
@@ -136,11 +164,11 @@ Mosquitto\\Client
 
         The level can be one of:
 
-        * ``Mosquitto\Client::LOG_DEBUG``
-        * ``Mosquitto\Client::LOG_INFO``
-        * ``Mosquitto\Client::LOG_NOTICE``
-        * ``Mosquitto\Client::LOG_WARNING``
-        * ``Mosquitto\Client::LOG_ERR``
+        * :php:const:`Client::LOG_DEBUG`
+        * :php:const:`Client::LOG_INFO`
+        * :php:const:`Client::LOG_NOTICE`
+        * :php:const:`Client::LOG_WARNING`
+        * :php:const:`Client::LOG_ERR`
 
     .. php:method:: onSubscribe($callback)
 

@@ -385,7 +385,7 @@ PHP_METHOD(Mosquitto_Client, connect)
 	mosquitto_strlen_type host_len, interface_len;
 	int retval;
 	zend_long port = 1883;
-	zend_long keepalive = 0;
+	zend_long keepalive = 60;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lls!",

@@ -492,7 +492,7 @@ static void mosquitto_message_object_destroy(zend_object *object TSRMLS_DC)
 #else
 	zend_hash_destroy(message->std.properties);
 	FREE_HASHTABLE(message->std.properties);
-
+#endif
 	if (message->owned_topic == 1) {
 		efree(message->message.topic);
 	}
@@ -502,7 +502,6 @@ static void mosquitto_message_object_destroy(zend_object *object TSRMLS_DC)
 	}
 
 	efree(object);
-#endif
 }
 
 #ifdef ZEND_ENGINE_3

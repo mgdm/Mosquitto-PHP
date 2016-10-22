@@ -1150,9 +1150,13 @@ PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, vo
 	message_object->message.mid = message->mid;
 	message_object->message.qos = message->qos;
 	message_object->message.retain = message->retain;
-	message_object->message.topic = message->topic;
-	message_object->message.payload = message->payload;
+	message_object->message.topic = estrdup(message->topic);
+	message_object->owned_topic = 1;
 	message_object->message.payloadlen = message->payloadlen;
+
+	message_object->message.payload = ecalloc(message->payloadlen, sizeof(char));
+	memcpy(message_object->message.payload, message->payload, message->payloadlen);
+	message_object->owned_payload = 1;
 
 	object->message_callback.params = params;
 	object->message_callback.param_count = 1;

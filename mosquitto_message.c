@@ -487,9 +487,12 @@ void php_mosquitto_message_add_property(HashTable *h, const char *name, size_t n
 static void mosquitto_message_object_destroy(zend_object *object TSRMLS_DC)
 {
 	mosquitto_message_object *message = mosquitto_message_object_from_zend_object(object);
+#ifdef ZEND_ENGINE_3
+        zend_object_std_dtor(object);
+#else
 	zend_hash_destroy(message->std.properties);
 	FREE_HASHTABLE(message->std.properties);
-
+#endif
 	if (message->owned_topic == 1) {
 		efree(message->message.topic);
 	}

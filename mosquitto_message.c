@@ -501,7 +501,9 @@ static void mosquitto_message_object_destroy(zend_object *object TSRMLS_DC)
 		efree(message->message.payload);
 	}
 
+#ifndef ZEND_ENGINE_3
 	efree(object);
+#endif
 }
 
 #ifdef ZEND_ENGINE_3

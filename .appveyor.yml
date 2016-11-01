@@ -108,7 +108,7 @@ install:
   - 'mkdir deps && cd deps'
   - appveyor DownloadFile http://slproweb.com/download/Win32OpenSSL-%SSL_VER%.exe
   - Win32OpenSSL-%SSL_VER%.exe /silent /verysilent /sp- /suppressmsgboxes
-  - appveyor DownloadFile ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip
+  - curl -fsSO ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip
   - 7z -y x pthreads-w32-2-9-1-release.zip -oC:\pthreads\
   - cinst -y nsis
   - appveyor DownloadFile http://www.eclipse.org/downloads/download.php?file=/mosquitto/binary/win32/mosquitto-1.4.10-install-win32.exe

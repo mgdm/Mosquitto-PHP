@@ -19,7 +19,7 @@ environment:
   PHP_DEVPACK: c:\projects\php-devpack
   PHP_DEPS: c:\projects\deps
   NO_INTERACTION: 1
-  SSL_VER: 1_0_2h
+  SSL_VER: 1_0_2j
 
 matrix:
     allow_failures:

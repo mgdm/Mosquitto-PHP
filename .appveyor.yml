@@ -108,8 +108,8 @@ install:
   - 7z -y x pthreads-w32-2-9-1-release.zip -oC:\pthreads\
   - ps: Start-FileDownload -FileName mosquitto-install.exe "http://www.eclipse.org/downloads/download.php?file=/mosquitto/binary/win32/mosquitto-1.4.10-install-win32.exe&r=1"
   - dir
-    echo Setting up Mosquitto
-  - mosquitto-install.exe /S /D=C:\mosquitto
+  - echo Setting up Mosquitto
+  - c:\projects\deps\mosquitto-install.exe /S /D=C:\mosquitto
   - echo Setting up PHP [%PHP_VERSION%]
   - '%PHP_SDK%\bin\phpsdk_setvars'
   - 'cd %APPVEYOR_BUILD_FOLDER%\..\php'

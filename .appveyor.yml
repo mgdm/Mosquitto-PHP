@@ -11,10 +11,6 @@ environment:
     PHP_TYPE: "Win32"
   - PHP_VERSION: 5.6
     PHP_TYPE: "nts-Win32"
-  - PHP_VERSION: 5.5
-    PHP_TYPE: "Win32"
-  - PHP_VERSION: 5.5
-    PHP_TYPE: "nts-Win32"
   PHP_SDK: c:\projects\php-sdk
   PHP_DEVPACK: c:\projects\php-devpack
   PHP_DEPS: c:\projects\deps

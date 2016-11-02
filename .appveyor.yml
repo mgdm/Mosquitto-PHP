@@ -121,7 +121,7 @@ test_script:
     - '"C:\\Program Files (x86)\\Microsoft Visual Studio %PHP_VC%.0\\VC\\vcvarsall.bat" %ARCH%'
     - Setlocal EnableDelayedExpansion
     - phpize
-    - configure --with-mosquitto=shared --with-php-build=c:\projects\deps
+    - configure --with-mosquitto=c:\mosquitto\devel --with-php-build=c:\projects\deps
     - nmake 2> compile-errors.log 1>compile.log
     - nmake test
 

@@ -110,7 +110,7 @@ install:
   - Win32OpenSSL-%SSL_VER%.exe /silent /verysilent /sp- /suppressmsgboxes
   - curl -fsSO ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip
   - 7z -y x pthreads-w32-2-9-1-release.zip -oC:\pthreads\
-  - curl -fsSo mosquitto-install.exe 'http://www.eclipse.org/downloads/download.php?file=/mosquitto/binary/win32/mosquitto-1.4.10-install-win32.exe^&r=1'
+  - curl -LfsSo mosquitto-install.exe 'http://www.eclipse.org/downloads/download.php?file=/mosquitto/binary/win32/mosquitto-1.4.10-install-win32.exe^&r=1'
   - dir
     echo Setting up Mosquitto
   - mosquitto-install.exe /S /D=C:\mosquitto

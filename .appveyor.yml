@@ -126,10 +126,11 @@ test_script:
     - nmake test
 
 on_failure:
-  - 'dir'
   - 'type compile-errors.log'
   - 'type compile.log'
   - 'type Makefile'
+  - 'dir /s'
+  - '%APPVEYOR_BUILD_FOLDER%\..\php\php.exe -i'
 
 artifacts:
   - path: '$(RELEASE_FOLDER)\php_mosquitto.dll'

@@ -843,7 +843,7 @@ PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 	return buf;
 }
 
-PHP_MOSQUITTO_API void php_mosquitto_exit_loop(mosquitto_client_object *object)
+void php_mosquitto_exit_loop(mosquitto_client_object *object)
 {
 	object->looping = 0;
 }

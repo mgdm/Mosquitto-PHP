@@ -859,11 +859,6 @@ static void mosquitto_client_object_destroy(zend_object *object ZO_HANDLE_DC TSR
 	mosquitto_destroy(client->client);
 	client->client = NULL;
 
-	if (MQTTG(client_key_len) > 0) {
-		efree(MQTTG(client_key));
-		MQTTG(client_key) = NULL;
-	}
-
 	PHP_MOSQUITTO_FREE_CALLBACK(client, connect);
 	PHP_MOSQUITTO_FREE_CALLBACK(client, subscribe);
 	PHP_MOSQUITTO_FREE_CALLBACK(client, unsubscribe);

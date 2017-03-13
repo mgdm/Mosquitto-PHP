@@ -41,7 +41,7 @@ array(2) {
   [0]=>
   int(16)
   [1]=>
-  string(%d) "Client %s received CONNACK"
+  string(%d) "Client %s received CONNACK%S"
 }
 array(2) {
   [0]=>

@@ -11,16 +11,14 @@
      <active>yes</active>
     </lead>
 
-    <date>2015-09-02</date>
-    <version><release>0.3.0</release><api>0.3.0</api></version>
+    <date>2017-03-13</date>
+    <version><release>0.4.0</release><api>0.4.0</api></version>
     <stability><release>beta</release><api>beta</api></stability>
 	<license uri="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</license>
 	<notes>
-      * Add missing onPublish callback
-      * Improve error handling
-      * Better PHPT tests
-      * add exitLoop() method to break out of the event loop without disconnecting
-      * Move to beta stability
+      * PHP 7 support thanks to Sara Golemon
+      * Improved docs hosted on ReadTheDocs
+      * Some memory usage fixes
     </notes>
 
     <contents>

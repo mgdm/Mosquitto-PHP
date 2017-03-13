@@ -53,8 +53,6 @@ $client->onConnect(function() use ($client) {
 
 $client->connect(TEST_MQTT_HOST, TEST_MQTT_TLS_PORT);
 $client->loopForever();
-
-$client->disconnect();
 unset($client);
 
 $client2 = new Mosquitto\Client;

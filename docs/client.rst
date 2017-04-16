@@ -10,31 +10,31 @@ Mosquitto\\Client
 
     .. php:const:: LOG_DEBUG
 
-        Identifies a debug-level log message
+        Identifies a debug-level log message. Deprecated. Use ``Mosquitto\\LogLevel::DEBUG`` instead.
 
     .. php:const:: LOG_INFO
 
-        Identifies an info-level log message
+        Identifies an info-level log message. Deprecated. Use ``Mosquitto\\LogLevel::INFO`` instead.
 
     .. php:const:: LOG_NOTICE
 
-        Identifies a notice-level log message
+        Identifies a notice-level log message. Deprecated. Use ``Mosquitto\\LogLevel::NOTICE`` instead.
 
     .. php:const:: LOG_WARNING
 
-        Identifies a warning-level log message
+        Identifies a warning-level log message. Deprecated. Use ``Mosquitto\\LogLevel::WARNING`` instead.
 
     .. php:const:: LOG_ERR
 
-        Identifies an error-level log message
+        Identifies an error-level log message. Deprecated. Use ``Mosquitto\\LogLevel::ERR`` instead.
 
     .. php:const:: SSL_VERIFY_NONE
 
-        Used with :php:meth:`~Client::setTlsInsecure`. Do not verify the identity of the server, thus making the connection insecure.
+        Used with :php:meth:`~Client::setTlsInsecure`. Do not verify the identity of the server, thus making the connection insecure. Deprecated. Use ``Mosquitto\\SslVerify::NONE`` instead.
 
     .. php:const:: SSL_VERIFY_PEER
 
-        Used with :php:meth:`~Client::setTlsInsecure`. Verify the identity of the server.
+        Used with :php:meth:`~Client::setTlsInsecure`. Verify the identity of the server. Deprecated. Use ``Mosquitto\\SslVerify::PEER`` instead.
 
     .. php:method:: __construct([$id = null, $cleanSession = true])
 
@@ -96,6 +96,12 @@ Mosquitto\\Client
     .. php:method:: clearWill()
 
         Remove a previously-set will. No parameters.
+
+    .. php:method:: setProtocolVersion($protocolVersion)
+
+        Select the MQTT protocol version to use when connecting to the server. The default is MQTT v3.1.
+
+        :param int $protocolVersion: The protocol version. May be ``Mosquitto\\ProtocolVersion:V31`` or ``Mosquitto\\ProtocolVersion:V311``.
 
     .. php:method:: setReconnectDelay($reconnectDelay, $exponentialDelay, $exponentialBackoff)
 

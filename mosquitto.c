@@ -89,6 +89,10 @@ ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setCredentials_args, ZEND_SEND_BY_VAL)
 	ZEND_ARG_INFO(0, password)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setProtocolVersion_args, ZEND_SEND_BY_VAL)
+	ZEND_ARG_INFO(0, protocolVersion)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setWill_args, ZEND_SEND_BY_VAL)
 	ZEND_ARG_INFO(0, topic)
 	ZEND_ARG_INFO(0, payload)
@@ -308,6 +312,25 @@ PHP_METHOD(Mosquitto_Client, setCredentials)
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
 	retval = mosquitto_username_pw_set(object->client, username, password);
+	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ Mosquitto\Client::setProtocolVersion() */
+PHP_METHOD(Mosquitto_Client, setProtocolVersion)
+{
+	mosquitto_client_object *object = mosquitto_client_object_from_zend_object(Z_OBJ_P(getThis()));
+	zend_long protocol_version;
+	int retval;
+
+	PHP_MOSQUITTO_ERROR_HANDLING();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &protocol_version) == FAILURE) {
+		PHP_MOSQUITTO_RESTORE_ERRORS();
+		return;
+	}
+	PHP_MOSQUITTO_RESTORE_ERRORS();
+
+	retval = mosquitto_opts_set(object->client, MOSQ_OPT_PROTOCOL_VERSION, (void *) &protocol_version);
 	php_mosquitto_handle_errno(retval, errno TSRMLS_CC);
 }
 /* }}} */
@@ -1368,6 +1391,7 @@ const zend_function_entry mosquitto_client_methods[] = {
 	PHP_ME(Mosquitto_Client, setTlsOptions, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setTlsPSK, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setCredentials, Mosquitto_Client_setCredentials_args, ZEND_ACC_PUBLIC)
+	PHP_ME(Mosquitto_Client, setProtocolVersion, Mosquitto_Client_setProtocolVersion_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setWill, Mosquitto_Client_setWill_args, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, clearWill, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Mosquitto_Client, setReconnectDelay, Mosquitto_Client_setReconnectDelay_args, ZEND_ACC_PUBLIC)
@@ -1458,6 +1482,7 @@ PHP_MINIT_FUNCTION(mosquitto)
 	mosquitto_lib_init();
 
 	PHP_MINIT(mosquitto_message)(INIT_FUNC_ARGS_PASSTHRU);
+	PHP_MINIT(mosquitto_constants)(INIT_FUNC_ARGS_PASSTHRU);
 
 	return SUCCESS;
 }

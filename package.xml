@@ -61,22 +61,10 @@
               <file role="test" name="setMaxInFlightMessages.phpt"/>
               <file role="test" name="setMessageRetry.phpt"/>
               <file role="test" name="setReconnectDelay.phpt"/>
-              <file role="test" name="setTlsCertificates.diff"/>
-              <file role="test" name="setTlsCertificates.exp"/>
-              <file role="test" name="setTlsCertificates.log"/>
-              <file role="test" name="setTlsCertificates.out"/>
-              <file role="test" name="setTlsCertificates.php"/>
               <file role="test" name="setTlsCertificates.phpt"/>
-              <file role="test" name="setTlsCertificates.sh"/>
               <file role="test" name="setTlsInsecure.phpt"/>
               <file role="test" name="setTlsOptions.phpt"/>
-              <file role="test" name="setTlsPSK.diff"/>
-              <file role="test" name="setTlsPSK.exp"/>
-              <file role="test" name="setTlsPSK.log"/>
-              <file role="test" name="setTlsPSK.out"/>
-              <file role="test" name="setTlsPSK.php"/>
               <file role="test" name="setTlsPSK.phpt"/>
-              <file role="test" name="setTlsPSK.sh"/>
               <file role="test" name="setWill.phpt"/>
               <file role="test" name="subscribe.phpt"/>
               <file role="test" name="unsubscribe.phpt"/>

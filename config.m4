@@ -43,7 +43,7 @@ if test "$PHP_MOSQUITTO" != "no"; then
   
   PHP_SUBST(MOSQUITTO_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(mosquitto, mosquitto.c mosquitto_message.c, $ext_shared)
+  PHP_NEW_EXTENSION(mosquitto, mosquitto.c mosquitto_message.c mosquitto_constants.c, $ext_shared)
 
   AC_FUNC_STRERROR_R
 fi

@@ -222,6 +222,9 @@ ZEND_EXTERN_MODULE_GLOBALS(mosquitto)
 extern zend_class_entry *mosquitto_ce_exception;
 extern zend_class_entry *mosquitto_ce_client;
 extern zend_class_entry *mosquitto_ce_message;
+extern zend_class_entry *mosquitto_ce_protocolversion;
+extern zend_class_entry *mosquitto_ce_sslverify;
+extern zend_class_entry *mosquitto_ce_loglevel;
 
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc);
 PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq, void *obj, int rc);
@@ -238,6 +241,7 @@ void php_mosquitto_exit_loop(mosquitto_client_object *object);
 
 PHP_MINIT_FUNCTION(mosquitto);
 PHP_MINIT_FUNCTION(mosquitto_message);
+PHP_MINIT_FUNCTION(mosquitto_constants);
 PHP_MSHUTDOWN_FUNCTION(mosquitto);
 PHP_MINFO_FUNCTION(mosquitto);
 

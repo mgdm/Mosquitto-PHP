@@ -48,7 +48,7 @@ The underlying library is based on callbacks and asynchronous operation. As such
 
 $c = new Mosquitto\Client;
 $c->onConnect(function() use ($c) {
-    $c->publish('mgdm/test', 'Hello', 0);
+    $c->publish('mgdm/test', 'Hello', 2);
     $c->disconnect();
 });
 

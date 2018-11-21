@@ -46,16 +46,25 @@ The underlying library is based on callbacks and asynchronous operation. As such
 ```php
 <?php
 
-$c = new Mosquitto\Client;
-$c->onConnect(function() use ($c) {
-    $c->publish('mgdm/test', 'Hello', 0);
-    $c->disconnect();
+use Mosquitto\Client;
+
+$mid = 0;
+$c = new Mosquitto\Client("PHP");
+$c->onLog('var_dump');
+$c->onConnect(function() use ($c, &$mid) {
+    $mid = $c->publish("mgdm/test", "Hello", 2);
 });
 
-$c->connect('test.mosquitto.org');
+$c->onPublish(function($publishedId) use ($c, $mid) {
+    if ($publishedId == $mid) {
+        $c->disconnect();
+    }
+});
+
+$c->connect("localhost");
 $c->loopForever();
 
-echo "Finished\n";
+echo "Finished"
 ```
 
 ## Documentation

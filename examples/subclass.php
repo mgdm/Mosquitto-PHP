@@ -32,7 +32,7 @@ class MyClient extends Mosquitto\Client {
 	}
 
 	public function onSubscribe(callable $callable) {
-		$this->subscribeHandler = $callable;
+		$this->subscribeCallback = $callable;
 	}
 
 	public function getSubscriptions() {

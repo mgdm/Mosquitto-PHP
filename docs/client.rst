@@ -111,7 +111,7 @@ Mosquitto\\Client
 
         :param string $host: Hostname to connect to
         :param int $port: Optional. Port number to connect to. Defaults to 1883.
-        :param int $keepalive: Optional. Number of sections after which the broker should PING the client if no messages have been recieved.
+        :param int $keepalive: Optional. Number of seconds after which the broker should PING the client if no messages have been recieved.
         :param string $interface: Optional. The address or hostname of a local interface to bind to for this connection.
 
     .. php:method:: disconnect()

@@ -91,7 +91,7 @@ zend_object *mosquitto_message_object_to_zend_object(mosquitto_message_object* m
 }
 
 typedef int (*php_mosquitto_read_t)(mosquitto_message_object *mosquitto_object, zval *retval);
-typedef int (*php_mosquitto_write_t)(mosquitto_message_object *mosquitto_object, zval *newval TSRMLS_DC);
+typedef int (*php_mosquitto_write_t)(mosquitto_message_object *mosquitto_object, zval *newval);
 
 typedef struct _php_mosquitto_prop_handler {
 	const char *name;
@@ -102,10 +102,10 @@ typedef struct _php_mosquitto_prop_handler {
 
 
 #define PHP_MOSQUITTO_ERROR_HANDLING() \
-	zend_replace_error_handling(EH_THROW, mosquitto_ce_exception, &MQTTG(mosquitto_original_error_handling) TSRMLS_CC)
+	zend_replace_error_handling(EH_THROW, mosquitto_ce_exception, &MQTTG(mosquitto_original_error_handling))
 
 #define PHP_MOSQUITTO_RESTORE_ERRORS() \
-	zend_restore_error_handling(&MQTTG(mosquitto_original_error_handling) TSRMLS_CC)
+	zend_restore_error_handling(&MQTTG(mosquitto_original_error_handling))
 
 # define PHP_MOSQUITTO_FREE_CALLBACK(client, CALLBACK) \
     if (ZEND_FCI_INITIALIZED(client->CALLBACK ## _callback)) { \
@@ -128,7 +128,7 @@ typedef struct _php_mosquitto_prop_handler {
 	int i = 0; \
 	while (b[i].name != NULL) { \
 		php_mosquitto_message_add_property((a), (b)[i].name, (b)[i].name_length, \
-							(php_mosquitto_read_t)(b)[i].read_func, (php_mosquitto_write_t)(b)[i].write_func TSRMLS_CC); \
+							(php_mosquitto_read_t)(b)[i].read_func, (php_mosquitto_write_t)(b)[i].write_func); \
 		i++; \
 	} \
 }
@@ -140,7 +140,7 @@ typedef struct _php_mosquitto_prop_handler {
 	}
 
 #define PHP_MOSQUITTO_MESSAGE_LONG_PROPERTY_WRITER_FUNCTION(name) \
-static int php_mosquitto_message_write_##name(mosquitto_message_object *mosquitto_object, zval *newval TSRMLS_DC) \
+static int php_mosquitto_message_write_##name(mosquitto_message_object *mosquitto_object, zval *newval) \
 { \
 	zval ztmp; \
 	if (Z_TYPE_P(newval) != IS_LONG) { \
@@ -187,7 +187,7 @@ PHP_MOSQUITTO_API void php_mosquitto_publish_callback(struct mosquitto *mosq, vo
 PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq, void *obj, int rc);
 
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err);
-void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC);
+void php_mosquitto_handle_errno(int retval, int err);
 void php_mosquitto_exit_loop(mosquitto_client_object *object);
 
 PHP_MINIT_FUNCTION(mosquitto);

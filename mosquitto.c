@@ -17,54 +17,34 @@ zend_object_handlers mosquitto_std_object_handlers;
 
 ZEND_DECLARE_MODULE_GLOBALS(mosquitto)
 
-#ifdef ZEND_ENGINE_3
-# ifndef Z_BVAL
-#  define Z_BVAL(zv) (Z_TYPE(zv) == IS_TRUE)
-#  define Z_BVAL_P(pzv) Z_BVAL(*pzv)
-# endif
-# define ZO_HANDLE_DC
-typedef size_t mosquitto_strlen_type;
-#else /* ZEND_ENGINE_2 */
-# ifndef Z_OBJ_P
-#  define Z_OBJ_P(pzv) ((zend_object*)zend_object_store_get_object(pzv TSRMLS_CC))
-# endif
-# define ZO_HANDLE_DC , zend_object_handle handle
-typedef int mosquitto_strlen_type;
-typedef long zend_long;
+#ifndef Z_BVAL
+# define Z_BVAL(zv) (Z_TYPE(zv) == IS_TRUE)
+# define Z_BVAL_P(pzv) Z_BVAL(*pzv)
 #endif
+#define ZO_HANDLE_DC
+typedef size_t mosquitto_strlen_type;
 
 static inline mosquitto_client_object *mosquitto_client_object_get(zval *zobj TSRMLS_DC) {
 	// TODO: ZEND_ASSERT()s
 	mosquitto_client_object *obj = mosquitto_client_object_from_zend_object(Z_OBJ_P(zobj));
 	if (!obj->client) {
 		php_error(E_ERROR, "Internal surface object missing in %s wrapper, "
-		                   "you must call parent::__construct in extended classes", Z_OBJCE_P(zobj)->name);
+		                   "you must call parent::__construct in extended classes", (char *) Z_OBJCE_P(zobj)->name);
 	}
 	return obj;
 }
 
 static inline void mosquitto_callback_addref(zend_fcall_info *finfo) {
-#ifdef ZEND_ENGINE_3
 	zval tmp;
 	Z_TRY_ADDREF(finfo->function_name);
 	if (finfo->object) {
 		ZVAL_OBJ(&tmp, finfo->object);
 		Z_TRY_ADDREF(tmp);
 	}
-#else
-	Z_ADDREF_P(finfo->function_name);
-	if (finfo->object_ptr) {
-		Z_ADDREF_P(finfo->object_ptr);
-	}
-#endif
 }
 
 static inline const char *mosquitto_finfo_name(zend_fcall_info *info) {
-#ifdef ZEND_ENGINE_3
 	return Z_STRVAL(info->function_name);
-#else
-	return Z_STRVAL_P(info->function_name);
-#endif
 }
 
 static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata);
@@ -77,11 +57,7 @@ ZEND_BEGIN_ARG_INFO(Mosquitto_Client___construct_args, ZEND_SEND_BY_VAL)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(Mosquitto_Client_callback_args, ZEND_SEND_BY_VAL)
-#if PHP_VERSION_ID > 50400
 	ZEND_ARG_TYPE_INFO(0, onConnect, IS_CALLABLE, 0)
-#else
-	ZEND_ARG_INFO(0, onConnect)
-#endif
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(Mosquitto_Client_setCredentials_args, ZEND_SEND_BY_VAL)
@@ -870,63 +846,18 @@ static void mosquitto_client_object_destroy(zend_object *object ZO_HANDLE_DC TSR
 
 static void mosquitto_client_object_free(zend_object *object TSRMLS_DC) {
 	mosquitto_client_object *client = mosquitto_client_object_from_zend_object(object);
-
-#ifdef ZEND_ENGINE_3
 	zend_object_std_dtor(object);
-#else
-	if (object->properties) {
-		zend_hash_destroy(object->properties);
-		FREE_HASHTABLE(object->properties);
-	}
-	efree(object);
-#endif
 }
 
-#ifdef ZEND_ENGINE_3
 static zend_object *mosquitto_client_object_new(zend_class_entry *ce) {
 	mosquitto_client_object *client = ecalloc(1, sizeof(mosquitto_client_object) + zend_object_properties_size(ce));
 	zend_object *ret = mosquitto_client_object_to_zend_object(client);
-
-#ifdef MOSQUITTO_NEED_TSRMLS
-	client->TSRMLS_C = TSRMLS_C;
-#endif
 
 	zend_object_std_init(ret, ce);
 	ret->handlers = &mosquitto_std_object_handlers;
 
 	return ret;
 }
-#else
-static zend_object_value mosquitto_client_object_new(zend_class_entry *ce TSRMLS_DC) {
-
-	zend_object_value retval;
-	mosquitto_client_object *client;
-#if PHP_VERSION_ID < 50399
-	zval *temp;
-#endif
-
-	client = ecalloc(1, sizeof(mosquitto_client_object));
-	client->std.ce = ce;
-	client->client = NULL;
-
-#ifdef MOSQUITTO_NEED_TSRMLS
-	client->TSRMLS_C = TSRMLS_C;
-#endif
-
-	ALLOC_HASHTABLE(client->std.properties);
-	zend_hash_init(client->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
-#if PHP_VERSION_ID < 50399
-	zend_hash_copy(client->std.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,(void *) &temp, sizeof(zval *));
-#else
-	object_properties_init(&client->std, ce);
-#endif
-	retval.handle = zend_objects_store_put(client,
-		(zend_objects_store_dtor_t)mosquitto_client_object_destroy,
-		(zend_objects_free_object_storage_t)mosquitto_client_object_free, NULL TSRMLS_CC);
-	retval.handlers = &mosquitto_std_object_handlers;
-	return retval;
-}
-#endif
 
 void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC) {
 	if (retval == MOSQ_ERR_ERRNO) {
@@ -946,40 +877,19 @@ void php_mosquitto_handle_errno(int retval, int err TSRMLS_DC) {
 PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, void *obj, int rc)
 {
 	mosquitto_client_object *object = (mosquitto_client_object*)obj;
-#ifdef ZEND_ENGINE_3
 	zval params[2], retval;
-#else
-	zval *retval_ptr = NULL, *rc_zval = NULL, *message_zval = NULL;
-	zval **params[2];
-#endif
 	const char *message;
-#ifdef MOSQUITTO_NEED_TSRMLS
-	TSRMLS_D = object->TSRMLS_C;
-#endif
 
 	if (!ZEND_FCI_INITIALIZED(object->connect_callback)) {
 		return;
 	}
 
 	message = mosquitto_connack_string(rc);
-#ifdef ZEND_ENGINE_3
 	ZVAL_LONG(&params[0], rc);
 	ZVAL_STRING(&params[1], message);
 
 	ZVAL_UNDEF(&retval);
 	object->connect_callback.retval = &retval;
-#else
-	MAKE_STD_ZVAL(rc_zval);
-	ZVAL_LONG(rc_zval, rc);
-	params[0] = &rc_zval;
-
-	MAKE_STD_ZVAL(message_zval);
-	ZVAL_STRING(message_zval, message, 1);
-	params[1] = &message_zval;
-
-	object->connect_callback.retval_ptr_ptr = &retval_ptr;
-#endif
-
 	object->connect_callback.params = params;
 	object->connect_callback.param_count = 2;
 
@@ -989,50 +899,24 @@ PHP_MOSQUITTO_API void php_mosquitto_connect_callback(struct mosquitto *mosq, vo
 		}
 	}
 
-#ifdef ZEND_ENGINE_3
 	zval_ptr_dtor(&params[0]);
 	zval_ptr_dtor(&params[1]);
 	zval_ptr_dtor(&retval);
-#else
-	zval_ptr_dtor(&rc_zval);
-	zval_ptr_dtor(&message_zval);
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(&retval_ptr);
-	}
-#endif
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq, void *obj, int rc)
 {
 	mosquitto_client_object *object = (mosquitto_client_object*)obj;
-#ifdef ZEND_ENGINE_3
 	zval params[1], retval;
-#else
-	zval *retval_ptr = NULL, *rc_zval = NULL;
-	zval **params[1];
-#endif
-#ifdef MOSQUITTO_NEED_TSRMLS
-	TSRMLS_D = object->TSRMLS_C;
-#endif
 
 	if (!ZEND_FCI_INITIALIZED(object->disconnect_callback)) {
 		return;
 	}
 
-#ifdef ZEND_ENGINE_3
 	ZVAL_LONG(&params[0], rc);
 	ZVAL_UNDEF(&retval);
 
 	object->disconnect_callback.retval = &retval;
-#else
-	MAKE_STD_ZVAL(rc_zval);
-	ZVAL_LONG(rc_zval, rc);
-	params[0] = &rc_zval;
-
-	object->disconnect_callback.retval_ptr_ptr = &retval_ptr;
-#endif
-
 	object->disconnect_callback.params = params;
 	object->disconnect_callback.param_count = 1;
 
@@ -1042,53 +926,24 @@ PHP_MOSQUITTO_API void php_mosquitto_disconnect_callback(struct mosquitto *mosq,
 		}
 	}
 
-#ifdef ZEND_ENGINE_3
 	zval_ptr_dtor(&params[0]);
 	zval_ptr_dtor(&retval);
-#else
-	zval_ptr_dtor(&rc_zval);
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(&retval_ptr);
-	}
-#endif
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_log_callback(struct mosquitto *mosq, void *obj, int level, const char *str)
 {
 	mosquitto_client_object *object = (mosquitto_client_object*)obj;
-#ifdef ZEND_ENGINE_3
 	zval params[2], retval;
-#else
-	zval *retval_ptr = NULL, *level_zval = NULL, *str_zval = NULL;
-	zval **params[2];
-#endif
-#ifdef MOSQUITTO_NEED_TSRMLS
-	TSRMLS_D = object->TSRMLS_C;
-#endif
 
 	if (!ZEND_FCI_INITIALIZED(object->log_callback)) {
 		return;
 	}
 
-#ifdef ZEND_ENGINE_3
 	ZVAL_LONG(&params[0], level);
 	ZVAL_STRING(&params[1], str);
 	ZVAL_UNDEF(&retval);
 
 	object->log_callback.retval = &retval;
-#else
-	MAKE_STD_ZVAL(level_zval);
-	ZVAL_LONG(level_zval, level);
-	MAKE_STD_ZVAL(str_zval);
-	ZVAL_STRING(str_zval, str, 1);
-
-	params[0] = &level_zval;
-	params[1] = &str_zval;
-
-	object->log_callback.retval_ptr_ptr = &retval_ptr;
-#endif
-
 	object->log_callback.params = params;
 	object->log_callback.param_count = 2;
 
@@ -1098,47 +953,24 @@ PHP_MOSQUITTO_API void php_mosquitto_log_callback(struct mosquitto *mosq, void *
 		}
 	}
 
-#ifdef ZEND_ENGINE_3
 	zval_ptr_dtor(&params[0]);
 	zval_ptr_dtor(&params[1]);
 	zval_ptr_dtor(&retval);
-#else
-	zval_ptr_dtor(params[0]);
-	zval_ptr_dtor(params[1]);
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(&retval_ptr);
-	}
-#endif
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, void *client_obj, const struct mosquitto_message *message)
 {
 	mosquitto_client_object *object = (mosquitto_client_object*)client_obj;
 	mosquitto_message_object *message_object;
-#ifdef ZEND_ENGINE_3
 	zval params[1], retval, *message_zval;
-#else
-	zval *retval_ptr = NULL, *message_zval = NULL;
-	zval **params[1];
-#endif
-#ifdef MOSQUITTO_NEED_TSRMLS
-	TSRMLS_D = object->TSRMLS_C;
-#endif
 
 	if (!ZEND_FCI_INITIALIZED(object->message_callback)) {
 		return;
 	}
 
-#ifdef ZEND_ENGINE_3
 	message_zval = &params[0];
 	ZVAL_UNDEF(&retval);
 	object->message_callback.retval = &retval;
-#else
-	MAKE_STD_ZVAL(message_zval);
-	params[0] = &message_zval;
-	object->message_callback.retval_ptr_ptr = &retval_ptr;
-#endif
 
 	object_init_ex(message_zval, mosquitto_ce_message);
 	message_object = mosquitto_message_object_from_zend_object(Z_OBJ_P(message_zval));
@@ -1162,47 +994,23 @@ PHP_MOSQUITTO_API void php_mosquitto_message_callback(struct mosquitto *mosq, vo
 		}
 	}
 
-#ifdef ZEND_ENGINE_3
 	zval_ptr_dtor(&params[0]);
 	zval_ptr_dtor(&retval);
-#else
-	zval_ptr_dtor(&message_zval);
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(&retval_ptr);
-	}
-#endif
 }
 
 
 PHP_MOSQUITTO_API void php_mosquitto_publish_callback(struct mosquitto *mosq, void *client_obj, int mid)
 {
 	mosquitto_client_object *object = (mosquitto_client_object*)client_obj;
-#ifdef ZEND_ENGINE_3
 	zval params[1], retval;
-#else
-	zval *retval_ptr = NULL, *mid_zval;
-	zval **params[1];
-#endif
-#ifdef MOSQUITTO_NEED_TSRMLS
-	TSRMLS_D = object->TSRMLS_C;
-#endif
 
 	if (!ZEND_FCI_INITIALIZED(object->publish_callback)) {
 		return;
 	}
 
-#ifdef ZEND_ENGINE_3
 	ZVAL_LONG(&params[0], mid);
 	ZVAL_UNDEF(&retval);
 	object->publish_callback.retval = &retval;
-#else
-	MAKE_STD_ZVAL(mid_zval);
-	ZVAL_LONG(mid_zval, mid);
-	params[0] = &mid_zval;
-	object->publish_callback.retval_ptr_ptr = &retval_ptr;
-#endif
-
 	object->publish_callback.params = params;
 	object->publish_callback.param_count = 1;
 
@@ -1212,30 +1020,14 @@ PHP_MOSQUITTO_API void php_mosquitto_publish_callback(struct mosquitto *mosq, vo
 		}
 	}
 
-#ifdef ZEND_ENGINE_3
 	zval_ptr_dtor(&params[0]);
 	zval_ptr_dtor(&retval);
-#else
-	zval_ptr_dtor(params[0]);
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(&retval_ptr);
-	}
-#endif
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, void *client_obj, int mid, int qos_count, const int *granted_qos)
 {
 	mosquitto_client_object *object = (mosquitto_client_object*)client_obj;
-#ifdef ZEND_ENGINE_3
 	zval params[3], retval;
-#else
-	zval *retval_ptr = NULL, *mid_zval, *qos_count_zval, *granted_qos_zval;
-	zval **params[3];
-#endif
-#ifdef MOSQUITTO_NEED_TSRMLS
-	TSRMLS_D = object->TSRMLS_C;
-#endif
 
 	if (!ZEND_FCI_INITIALIZED(object->subscribe_callback)) {
 		return;
@@ -1243,27 +1035,12 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 
 	/* Since we can only subscribe to one topic per message, it seems reasonable to
 	 * take just the first entry from granted_qos as the granted QoS value */
-#ifdef ZEND_ENGINE_3
 	ZVAL_LONG(&params[0], mid);
 	ZVAL_LONG(&params[1], qos_count);
 	ZVAL_LONG(&params[2], *granted_qos);
 	ZVAL_UNDEF(&retval);
 
 	object->subscribe_callback.retval = &retval;
-#else
-	MAKE_STD_ZVAL(mid_zval);
-	MAKE_STD_ZVAL(qos_count_zval);
-	MAKE_STD_ZVAL(granted_qos_zval);
-	ZVAL_LONG(mid_zval, mid);
-	ZVAL_LONG(qos_count_zval, qos_count);
-	ZVAL_LONG(granted_qos_zval, *granted_qos);
-	params[0] = &mid_zval;
-	params[1] = &qos_count_zval;
-	params[2] = &granted_qos_zval;
-
-	object->subscribe_callback.retval_ptr_ptr = &retval_ptr;
-#endif
-
 	object->subscribe_callback.params = params;
 	object->subscribe_callback.param_count = 3;
 
@@ -1273,52 +1050,25 @@ PHP_MOSQUITTO_API void php_mosquitto_subscribe_callback(struct mosquitto *mosq, 
 		}
 	}
 
-#ifdef ZEND_ENGINE_3
 	zval_ptr_dtor(&params[0]);
 	zval_ptr_dtor(&params[1]);
 	zval_ptr_dtor(&params[2]);
 	zval_ptr_dtor(&retval);
-#else
-	zval_ptr_dtor(params[0]);
-	zval_ptr_dtor(params[1]);
-	zval_ptr_dtor(params[2]);
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(&retval_ptr);
-	}
-#endif
 }
 
 PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq, void *client_obj, int mid)
 {
 	mosquitto_client_object *object = (mosquitto_client_object*)client_obj;
-#ifdef ZEND_ENGINE_3
 	zval params[1], retval;
-#else
-	zval *retval_ptr = NULL, *mid_zval;
-	zval **params[1];
-#endif
-#ifdef MOSQUITTO_NEED_TSRMLS
-	TSRMLS_D = object->TSRMLS_C;
-#endif
 
 	if (!ZEND_FCI_INITIALIZED(object->unsubscribe_callback)) {
 		return;
 	}
 
-#ifdef ZEND_ENGINE_3
 	ZVAL_LONG(&params[0], mid);
 	ZVAL_UNDEF(&retval);
 
 	object->unsubscribe_callback.retval = &retval;
-#else
-	MAKE_STD_ZVAL(mid_zval);
-	ZVAL_LONG(mid_zval, mid);
-	params[0] = &mid_zval;
-
-	object->unsubscribe_callback.retval_ptr_ptr = &retval_ptr;
-#endif
-
 	object->unsubscribe_callback.params = params;
 	object->unsubscribe_callback.param_count = 1;
 
@@ -1328,16 +1078,8 @@ PHP_MOSQUITTO_API void php_mosquitto_unsubscribe_callback(struct mosquitto *mosq
 		}
 	}
 
-#ifdef ZEND_ENGINE_3
 	zval_ptr_dtor(&params[0]);
 	zval_ptr_dtor(&retval);
-#else
-	zval_ptr_dtor(params[0]);
-
-	if (retval_ptr != NULL) {
-		zval_ptr_dtor(&retval_ptr);
-	}
-#endif
 }
 
 static int php_mosquitto_pw_callback(char *buf, int size, int rwflag, void *userdata) {
@@ -1393,9 +1135,7 @@ const zend_function_entry mosquitto_functions[] = {
 
 /* {{{ mosquitto_module_entry */
 zend_module_entry mosquitto_module_entry = {
-#if ZEND_MODULE_API_NO >= 20010901
 	STANDARD_MODULE_HEADER,
-#endif
 	"mosquitto",
 	NULL,
 	PHP_MINIT(mosquitto),
@@ -1403,9 +1143,7 @@ zend_module_entry mosquitto_module_entry = {
 	NULL,
 	NULL,
 	PHP_MINFO(mosquitto),
-#if ZEND_MODULE_API_NO >= 20010901
 	PHP_MOSQUITTO_VERSION,
-#endif
 	PHP_MODULE_GLOBALS(mosquitto),
 	NULL,
 	NULL,
@@ -1425,22 +1163,16 @@ PHP_MINIT_FUNCTION(mosquitto)
 
 	memcpy(&mosquitto_std_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	mosquitto_std_object_handlers.clone_obj = NULL;
-#ifdef ZEND_ENGINE_3
 	mosquitto_std_object_handlers.offset    = XtOffsetOf(mosquitto_client_object, std);
 	mosquitto_std_object_handlers.free_obj  = mosquitto_client_object_free;
 	mosquitto_std_object_handlers.dtor_obj  = mosquitto_client_object_destroy;
-#endif
 
 	INIT_NS_CLASS_ENTRY(client_ce, "Mosquitto", "Client", mosquitto_client_methods);
 	mosquitto_ce_client = zend_register_internal_class(&client_ce TSRMLS_CC);
 	mosquitto_ce_client->create_object = mosquitto_client_object_new;
 
 	INIT_NS_CLASS_ENTRY(exception_ce, "Mosquitto", "Exception", NULL);
-	mosquitto_ce_exception = zend_register_internal_class_ex(&exception_ce, zend_exception_get_default(TSRMLS_C)
-#ifndef ZEND_ENGINE_3
-			, "Exception" TSRMLS_CC
-#endif
-	);
+	mosquitto_ce_exception = zend_register_internal_class_ex(&exception_ce, zend_exception_get_default(TSRMLS_C));
 
 	#define REGISTER_MOSQUITTO_LONG_CONST(const_name, value) \
 	zend_declare_class_constant_long(mosquitto_ce_client, const_name, sizeof(const_name)-1, (long)value TSRMLS_CC); \

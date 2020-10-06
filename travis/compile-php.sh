@@ -3,7 +3,7 @@ set -e
 mkdir -p $HOME/php
 git clone https://github.com/php/php-src $HOME/php/src
 cd $HOME/php/src
-git checkout PHP-7.0
+git checkout PHP-7.2
 ./buildconf --force
 ./configure \
     --prefix=$HOME \

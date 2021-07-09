@@ -810,8 +810,8 @@ static int strerror_r(int errnum, char *buf, size_t buf_len)
 
 PHP_MOSQUITTO_API char *php_mosquitto_strerror_wrapper(int err)
 {
-	char *buf = ecalloc(256, sizeof(char));
-	strerror_r(err, buf, 256);
+	char *ret, *buf = ecalloc(256, sizeof(char));
+	ret = strerror_r(err, buf, 256);
 	if (!buf[0]) {
 		efree(buf);
 		return NULL;

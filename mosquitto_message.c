@@ -18,13 +18,16 @@ typedef size_t mosquitto_strlen_type;
 
 /* {{{ Arginfo */
 
-ZEND_BEGIN_ARG_INFO(Mosquitto_Message_topicMatchesSub_args, ZEND_SEND_BY_VAL)
-	ZEND_ARG_INFO(0, topic)
-	ZEND_ARG_INFO(0, subscription)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(Mosquitto_Message_topicMatchesSub_args, 0, 2, _IS_BOOL, 0)
+	ZEND_ARG_TYPE_INFO(0, topic, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, subscription, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(Mosquitto_Message_tokeniseTopic_args, ZEND_SEND_BY_VAL)
-	ZEND_ARG_INFO(0, topic)
+ZEND_BEGIN_ARG_INFO_EX(Mosquitto_Message_tokeniseTopic_args, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, topic, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(Mosquitto_Message_void_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 /* }}} */
@@ -194,25 +197,18 @@ const php_mosquitto_prop_handler php_mosquitto_message_property_entries[] = {
 #define HAS_PROPERTY_DC , void **cache_slot
 #define HAS_PROPERTY_CC , cache_slot
 
-static php_mosquitto_prop_handler *mosquitto_get_prop_handler(zval *prop) {
-	zval *ret = zend_hash_find(&php_mosquitto_message_properties, Z_STR_P(prop));
+static php_mosquitto_prop_handler *mosquitto_get_prop_handler(zend_string *prop) {
+	zval *ret = zend_hash_find(&php_mosquitto_message_properties, prop); //Z_STR_P(prop)
 	if (!ret || Z_TYPE_P(ret) != IS_PTR) {
 		return NULL;
 	}
 	return (php_mosquitto_prop_handler*)Z_PTR_P(ret);
 }
 
-zval *php_mosquitto_message_read_property(zval *object, zval *member, int type READ_PROPERTY_DC) {
-	zval tmp_member;
-	mosquitto_message_object *message_object = mosquitto_message_object_from_zend_object(Z_OBJ_P(object));
+zval *php_mosquitto_message_read_property(zend_object *object, zend_string *member, int type READ_PROPERTY_DC) {
+	mosquitto_message_object *message_object = mosquitto_message_object_from_zend_object(object); //Z_OBJ_P(object)
 	php_mosquitto_prop_handler *hnd;
 
-	if (Z_TYPE_P(member) != IS_STRING) {
-		tmp_member = *member;
-		zval_copy_ctor(&tmp_member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
-	}
 	hnd = mosquitto_get_prop_handler(member);
 
 	if (hnd && hnd->read_func) {
@@ -224,25 +220,13 @@ zval *php_mosquitto_message_read_property(zval *object, zval *member, int type R
 		retval = std_hnd->read_property(object, member, type READ_PROPERTY_CC);
 	}
 
-	if (member == &tmp_member) {
-		zval_dtor(member);
-	}
-
 	return(retval);
 }
 
-void php_mosquitto_message_write_property(zval *object, zval *member, zval *value WRITE_PROPERTY_DC)
+zval *php_mosquitto_message_write_property(zend_object *object, zend_string *member, zval *value WRITE_PROPERTY_DC)
 {
-	zval tmp_member;
-	mosquitto_message_object *obj = mosquitto_message_object_from_zend_object(Z_OBJ_P(object));
+	mosquitto_message_object *obj = mosquitto_message_object_from_zend_object(object); // Z_OBJ_P(object)
 	php_mosquitto_prop_handler *hnd;
-
-	if (Z_TYPE_P(member) != IS_STRING) {
-		tmp_member = *member;
-		zval_copy_ctor(&tmp_member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
-	}
 
 	hnd = mosquitto_get_prop_handler(member);
 
@@ -257,12 +241,10 @@ void php_mosquitto_message_write_property(zval *object, zval *member, zval *valu
 		std_hnd->write_property(object, member, value WRITE_PROPERTY_CC);
 	}
 
-	if (member == &tmp_member) {
-		zval_dtor(member);
-	}
+	return (value);
 }
 
-static int php_mosquitto_message_has_property(zval *object, zval *member, int has_set_exists HAS_PROPERTY_DC)
+static int php_mosquitto_message_has_property(zend_object *object, zend_string *member, int has_set_exists HAS_PROPERTY_DC)
 {
 	php_mosquitto_prop_handler *hnd = mosquitto_get_prop_handler(member);
 	int ret = 0;
@@ -298,9 +280,9 @@ static int php_mosquitto_message_has_property(zval *object, zval *member, int ha
 	return ret;
 }
 
-static HashTable *php_mosquitto_message_get_properties(zval *object)
+static HashTable *php_mosquitto_message_get_properties(zend_object *object)
 {
-	mosquitto_message_object *obj = mosquitto_message_object_from_zend_object(Z_OBJ_P(object));
+	mosquitto_message_object *obj = mosquitto_message_object_from_zend_object(object);
 	php_mosquitto_prop_handler *hnd;
 	HashTable *props;
 	zend_string *key;
@@ -343,7 +325,7 @@ void php_mosquitto_message_add_property(HashTable *h, const char *name, size_t n
 static void mosquitto_message_object_destroy(zend_object *object)
 {
 	mosquitto_message_object *message = mosquitto_message_object_from_zend_object(object);
-        zend_object_std_dtor(object);
+	zend_object_std_dtor(object);
 	if (message->owned_topic == 1) {
 		efree(message->message.topic);
 	}
@@ -366,7 +348,7 @@ static zend_object *mosquitto_message_object_new(zend_class_entry *ce) {
 }
 
 const zend_function_entry mosquitto_message_methods[] = {
-	PHP_ME(Mosquitto_Message, __construct, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Mosquitto_Message, __construct, Mosquitto_Message_void_args, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Mosquitto_Message, topicMatchesSub, Mosquitto_Message_topicMatchesSub_args, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_ME(Mosquitto_Message, tokeniseTopic, Mosquitto_Message_tokeniseTopic_args, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_FE_END

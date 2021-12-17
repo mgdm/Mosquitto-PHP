@@ -145,7 +145,7 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(Mosquitto_Client_publish_args, 0, 2, IS_LONG, 0)
 	ZEND_ARG_TYPE_INFO(0, topic, IS_STRING, 0)
-	ZEND_ARG_TYPE_INFO(0, payload, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, payload, IS_STRING, 1)
 	ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, qos, IS_LONG, 0, "0")
 	ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, retain, _IS_BOOL, 0, "false")
 ZEND_END_ARG_INFO()
@@ -204,16 +204,27 @@ PHP_METHOD(Mosquitto_Client, __construct)
 PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 {
 	mosquitto_client_object *object = mosquitto_client_object_from_zend_object(Z_OBJ_P(getThis()));
-	char *ca_path = NULL, *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
-	mosquitto_strlen_type ca_path_len = 0, cert_path_len = 0, key_path_len = 0, key_pw_len;
+#if ZEND_MODULE_API_NO >= 20210902
+	zend_string *ca_path = NULL;
+#else
+	char *ca_path = NULL;
+	mosquitto_strlen_type ca_path_len = 0;
+#endif
+	char *cert_path = NULL, *key_path = NULL, *key_pw = NULL;
+	mosquitto_strlen_type cert_path_len = 0, key_path_len = 0, key_pw_len;
 	int retval = 0;
 	zval stat;
 	zend_bool is_dir = 0;
 	int (*pw_callback)(char *, int, int, void *) = NULL;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
+#if ZEND_MODULE_API_NO >= 20210902
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "S!|s!s!s!",
+				&ca_path,
+#else
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s!|s!s!s!",
 				&ca_path, &ca_path_len,
+#endif
 				&cert_path, &cert_path_len,
 				&key_path, &key_path_len,
 				&key_pw, &key_pw_len) == FAILURE) {
@@ -221,7 +232,11 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 		return;
 	}
 
+#if ZEND_MODULE_API_NO >= 20210902
+	if ((php_check_open_basedir(ZSTR_VAL(ca_path)) < 0) ||
+#else
 	if ((php_check_open_basedir(ca_path) < 0) ||
+#endif
 		(php_check_open_basedir(cert_path) < 0) ||
 		(php_check_open_basedir(key_path) < 0))
 	{
@@ -231,7 +246,11 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 
 	PHP_MOSQUITTO_RESTORE_ERRORS();
 
+#if ZEND_MODULE_API_NO >= 20210902
+	php_stat(ca_path, FS_IS_DIR, &stat);
+#else
 	php_stat(ca_path, ca_path_len, FS_IS_DIR, &stat);
+#endif
 	is_dir = Z_BVAL(stat);
 
 	if (key_pw != NULL) {
@@ -241,9 +260,15 @@ PHP_METHOD(Mosquitto_Client, setTlsCertificates)
 	}
 
 	if (is_dir) {
+#if ZEND_MODULE_API_NO >= 20210902
+		retval = mosquitto_tls_set(object->client, NULL, ZSTR_VAL(ca_path), cert_path, key_path, pw_callback);
+	} else {
+		retval = mosquitto_tls_set(object->client, ZSTR_VAL(ca_path), NULL, cert_path, key_path, pw_callback);
+#else
 		retval = mosquitto_tls_set(object->client, NULL, ca_path, cert_path, key_path, pw_callback);
 	} else {
 		retval = mosquitto_tls_set(object->client, ca_path, NULL, cert_path, key_path, pw_callback);
+#endif
 	}
 
 	php_mosquitto_handle_errno(retval, errno);
@@ -724,7 +749,7 @@ PHP_METHOD(Mosquitto_Client, publish)
 	char *topic, *payload;
 
 	PHP_MOSQUITTO_ERROR_HANDLING();
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "ss|lb",
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "ss!|lb",
 				&topic, &topic_len, &payload, &payload_len, &qos, &retain) == FAILURE) {
 		PHP_MOSQUITTO_RESTORE_ERRORS();
 		return;
